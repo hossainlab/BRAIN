@@ -1,0 +1,386 @@
+---
+title: "Module 10: Clustering"
+subtitle: "Identifying Cell Populations in Single-Cell Data"
+---
+
+## Overview
+
+Clustering groups similar cells together to identify cell types and states in single-cell datasets.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand clustering algorithms
+- Apply Leiden and Louvain clustering
+- Optimize clustering resolution
+- Validate and interpret clusters
+- Visualize clustering results
+:::
+
+## Why Clustering?
+
+**Goals**:
+- Identify cell types/subtypes
+- Discover novel populations
+- Group cells for downstream analyses
+- Enable cell type annotation
+
+## Graph-Based Clustering
+
+Most common approach in scRNA-seq:
+
+1. Build k-nearest neighbor (KNN) graph
+2. Apply community detection algorithm
+3. Assign cells to clusters
+
+## Computing Neighbors
+
+```python
+import scanpy as sc
+
+# Compute neighborhood graph
+sc.pp.neighbors(
+    adata,
+    n_neighbors=15,   # Number of neighbors
+    n_pcs=30,         # Number of PCs to use
+    metric='euclidean' # Distance metric
+)
+```
+
+## Leiden Clustering (Recommended)
+
+```python
+# Run Leiden
+sc.tl.leiden(
+    adata,
+    resolution=0.5,    # Controls granularity
+    key_added='leiden'
+)
+
+# Visualize
+sc.pl.umap(adata, color='leiden')
+```
+
+### Resolution Parameter
+
+```python
+# Low resolution: Fewer, larger clusters
+sc.tl.leiden(adata, resolution=0.2, key_added='leiden_02')
+
+# Medium resolution: Balanced
+sc.tl.leiden(adata, resolution=0.5, key_added='leiden_05')
+
+# High resolution: More, smaller clusters
+sc.tl.leiden(adata, resolution=1.0, key_added='leiden_10')
+
+# Compare
+sc.pl.umap(adata, color=['leiden_02', 'leiden_05', 'leiden_10'])
+```
+
+## Louvain Clustering
+
+```python
+# Run Louvain
+sc.tl.louvain(
+    adata,
+    resolution=0.5,
+    key_added='louvain'
+)
+
+# Visualize
+sc.pl.umap(adata, color='louvain')
+```
+
+## Choosing Resolution
+
+### Methods to Determine Resolution
+
+1. **Biological knowledge**: Expected cell types
+2. **Stability**: Consistent across resolutions
+3. **Marker gene expression**: Clear differential expression
+4. **Clustering metrics**: Silhouette score, Davies-Bouldin
+
+### Resolution Sweep
+
+```python
+# Test multiple resolutions
+resolutions = [0.1, 0.3, 0.5, 0.7, 0.9, 1.1]
+
+for res in resolutions:
+    sc.tl.leiden(adata, resolution=res, key_added=f'leiden_{res}')
+
+# Visualize all
+sc.pl.umap(adata, color=[f'leiden_{res}' for res in resolutions])
+```
+
+## Hierarchical Clustering
+
+```python
+# For smaller datasets or subclustering
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+# Compute linkage
+Z = linkage(adata.obsm['X_pca'][:, :30], method='ward')
+
+# Plot dendrogram
+plt.figure(figsize=(10, 5))
+dendrogram(Z)
+plt.show()
+```
+
+## Validating Clusters
+
+### Marker Gene Expression
+
+```python
+# Known cell type markers
+markers = {
+    'Neurons': ['SYN1', 'SNAP25', 'RBFOX3'],
+    'Astrocytes': ['GFAP', 'AQP4', 'SLC1A3'],
+    'Oligodendrocytes': ['MBP', 'MOG', 'PLP1'],
+    'Microglia': ['CX3CR1', 'P2RY12', 'TMEM119']
+}
+
+# Visualize markers
+for cell_type, genes in markers.items():
+    sc.pl.umap(adata, color=genes, ncols=3, title=cell_type)
+```
+
+### Cluster Stability
+
+```python
+# Subsample and re-cluster
+import numpy as np
+
+n_iterations = 10
+stability_scores = []
+
+for i in range(n_iterations):
+    # Subsample 80% of cells
+    sample_idx = np.random.choice(adata.n_obs,
+                                   int(0.8 * adata.n_obs),
+                                   replace=False)
+    adata_sub = adata[sample_idx, :]
+
+    # Cluster
+    sc.pp.neighbors(adata_sub)
+    sc.tl.leiden(adata_sub)
+
+    # Calculate stability metric
+    # (compare to original clustering)
+```
+
+### Silhouette Score
+
+```python
+from sklearn.metrics import silhouette_score
+
+# Calculate silhouette score
+silhouette = silhouette_score(
+    adata.obsm['X_pca'][:, :30],
+    adata.obs['leiden']
+)
+
+print(f"Silhouette score: {silhouette:.3f}")
+# Higher is better (range: -1 to 1)
+```
+
+## Finding Cluster Markers
+
+### Differential Expression
+
+```python
+# Find markers for each cluster
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='leiden',
+    method='wilcoxon',
+    key_added='rank_genes_leiden'
+)
+
+# Visualize top markers
+sc.pl.rank_genes_groups(adata, n_genes=20)
+
+# Heatmap of top markers
+sc.pl.rank_genes_groups_heatmap(adata, n_genes=10)
+
+# Dotplot
+sc.pl.rank_genes_groups_dotplot(adata, n_genes=5)
+```
+
+### Extract Marker Genes
+
+```python
+# Get marker DataFrame
+result = sc.get.rank_genes_groups_df(adata, group='0')
+print(result.head(20))
+
+# Filter significant markers
+markers = result[
+    (result['pvals_adj'] < 0.05) &
+    (result['logfoldchanges'] > 1)
+]
+```
+
+## Visualizing Clusters
+
+### UMAP with Clusters
+
+```python
+# Basic clustering plot
+sc.pl.umap(adata, color='leiden', legend_loc='on data')
+
+# With multiple features
+sc.pl.umap(adata, color=['leiden', 'n_genes', 'cell_type'])
+
+# Faceted by cluster
+sc.pl.umap(adata, color='leiden', ncols=1, groups=['0', '1', '2'])
+```
+
+### Dot Plot
+
+```python
+# Marker gene expression per cluster
+marker_genes = ['BDNF', 'SYN1', 'GFAP', 'MBP', 'CX3CR1']
+
+sc.pl.dotplot(adata,
+              marker_genes,
+              groupby='leiden',
+              dendrogram=True)
+```
+
+### Matrix Plot
+
+```python
+sc.pl.matrixplot(adata,
+                 marker_genes,
+                 groupby='leiden',
+                 dendrogram=True,
+                 cmap='RdBu_r')
+```
+
+### Stacked Violin Plot
+
+```python
+sc.pl.stacked_violin(adata,
+                     marker_genes,
+                     groupby='leiden',
+                     rotation=90)
+```
+
+## Subclustering
+
+```python
+# Subset specific cluster
+cluster_2 = adata[adata.obs['leiden'] == '2'].copy()
+
+# Re-process
+sc.pp.neighbors(cluster_2, n_pcs=20)
+sc.tl.leiden(cluster_2, resolution=0.5)
+sc.tl.umap(cluster_2)
+
+# Visualize subclusters
+sc.pl.umap(cluster_2, color='leiden')
+```
+
+## Cluster Annotation
+
+### Manual Annotation
+
+```python
+# Based on marker gene expression
+cluster_names = {
+    '0': 'Excitatory neurons',
+    '1': 'Inhibitory neurons',
+    '2': 'Astrocytes',
+    '3': 'Oligodendrocytes',
+    '4': 'Microglia',
+    '5': 'OPCs'
+}
+
+adata.obs['cell_type'] = adata.obs['leiden'].map(cluster_names)
+
+# Visualize
+sc.pl.umap(adata, color='cell_type')
+```
+
+## Common Issues
+
+### Over-clustering
+
+**Symptoms**: Too many similar clusters
+
+**Solutions**:
+- Decrease resolution
+- Filter highly variable genes more strictly
+- Check for doublets
+
+### Under-clustering
+
+**Symptoms**: Mixed cell types in clusters
+
+**Solutions**:
+- Increase resolution
+- Use more PCs
+- Re-examine preprocessing
+
+### Batch-Driven Clustering
+
+**Symptoms**: Clusters separate by batch, not biology
+
+**Solutions**:
+- Apply data integration
+- Use batch-aware methods
+
+## Best Practices
+
+::: {.callout-tip}
+## Clustering Tips
+
+- Try multiple resolutions
+- Validate with known markers
+- Calculate stability metrics
+- Compare Leiden and Louvain
+- Subcluster for finer resolution
+- Document decisions
+- Use biological knowledge
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Compute neighbor graph with different parameters
+2. Run Leiden clustering at multiple resolutions
+3. Visualize clusters with UMAP
+4. Find marker genes for each cluster
+5. Validate clusters with known markers
+6. Choose optimal resolution
+7. Annotate clusters based on markers
+:::
+
+## Key Takeaways
+
+- Graph-based clustering is standard in scRNA-seq
+- Leiden is generally preferred over Louvain
+- Resolution parameter controls granularity
+- Always validate with marker genes
+- Clustering is iterative, not one-size-fits-all
+- Biological interpretation is essential
+
+## Additional Resources
+
+- [Leiden Algorithm Paper](https://www.nature.com/articles/s41598-019-41695-z)
+- [Clustering Best Practices](https://www.sc-best-practices.org/)
+- [Scanpy Clustering Tutorial](https://scanpy-tutorials.readthedocs.io/)
+
+## Next Module
+
+With clusters defined, let's find differentially expressed genes!
+
+[Continue to Module 11: Differential Expression →](11-differential-expression.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

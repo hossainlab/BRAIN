@@ -1,0 +1,408 @@
+---
+title: "Module 14: Spatial Transcriptomics"
+subtitle: "Mapping Gene Expression in Tissue Context"
+---
+
+## Overview
+
+Spatial transcriptomics measures gene expression while preserving spatial location, revealing how cells are organized in tissues and how location influences function.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand spatial transcriptomics technologies
+- Analyze 10x Visium data with Scanpy/Squidpy
+- Perform spatial clustering
+- Identify spatially variable genes
+- Integrate spatial with scRNA-seq data
+:::
+
+## Spatial Technologies
+
+### Sequencing-Based
+
+::: {.module-card}
+**10x Visium**
+- 55µm spots
+- ~1-10 cells per spot
+- Whole transcriptome
+- Most widely used
+
+**Slide-seq**
+- 10µm beads
+- Higher resolution
+- Whole transcriptome
+
+**HDST**
+- 2µm resolution
+- Very high resolution
+- Subcellular detail
+:::
+
+### Imaging-Based
+
+::: {.module-card}
+**MERFISH**
+- Single-cell resolution
+- 100-10,000 genes
+- Multiplexed FISH
+
+**seqFISH+**
+- Subcellular resolution
+- 10,000+ genes
+- Sequential hybridization
+
+**Xenium (10x)**
+- Subcellular resolution
+- 300-500 genes
+- Automated platform
+:::
+
+## Loading Visium Data
+
+```python
+import scanpy as sc
+import squidpy as sq
+
+# Load Visium data
+adata = sc.read_visium(
+    path='visium_data',
+    count_file='filtered_feature_bc_matrix.h5',
+    load_images=True
+)
+
+# View data structure
+print(adata)
+print(adata.obs)
+print(adata.uns['spatial'])
+```
+
+## Quality Control
+
+```python
+# Calculate QC metrics
+adata.var['mt'] = adata.var_names.str.startswith('MT-')
+sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], inplace=True)
+
+# Visualize QC on tissue
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+sc.pl.spatial(adata, color='total_counts', ax=axes[0], show=False)
+sc.pl.spatial(adata, color='n_genes_by_counts', ax=axes[1], show=False)
+sc.pl.spatial(adata, color='pct_counts_mt', ax=axes[2], show=False)
+
+plt.tight_layout()
+```
+
+## Preprocessing
+
+```python
+# Filter spots/genes
+sc.pp.filter_cells(adata, min_genes=200)
+sc.pp.filter_genes(adata, min_cells=10)
+
+# Normalize and log transform
+sc.pp.normalize_total(adata, target_sum=1e4)
+sc.pp.log1p(adata)
+
+# Identify highly variable genes
+sc.pp.highly_variable_genes(adata, n_top_genes=2000)
+
+# Scale
+sc.pp.scale(adata)
+```
+
+## Dimensionality Reduction and Clustering
+
+```python
+# PCA
+sc.tl.pca(adata)
+
+# Neighbors and UMAP
+sc.pp.neighbors(adata, n_pcs=30)
+sc.tl.umap(adata)
+
+# Leiden clustering
+sc.tl.leiden(adata, resolution=0.5)
+
+# Visualize
+sc.pl.umap(adata, color=['leiden'])
+sc.pl.spatial(adata, color='leiden', size=1.5)
+```
+
+## Spatial Visualization
+
+### Gene Expression Patterns
+
+```python
+# Single gene
+sc.pl.spatial(adata, color='BDNF', cmap='viridis', size=1.5)
+
+# Multiple genes
+genes = ['BDNF', 'GFAP', 'MBP', 'CX3CR1']
+sc.pl.spatial(adata, color=genes, ncols=2, size=1.5)
+
+# With image overlay
+sc.pl.spatial(adata, color='BDNF', img_key='hires', alpha_img=0.5)
+```
+
+### Clusters on Tissue
+
+```python
+# Clusters with spatial context
+sc.pl.spatial(adata, color='leiden', size=1.5, alpha=0.8)
+
+# Multiple images
+sq.pl.spatial_scatter(
+    adata,
+    color=['leiden', 'BDNF', 'GFAP'],
+    img=True,
+    alpha=0.7,
+    size=1.5
+)
+```
+
+## Spatially Variable Genes
+
+### Moran's I
+
+```python
+import squidpy as sq
+
+# Compute spatial neighbors
+sq.gr.spatial_neighbors(adata, coord_type='grid')
+
+# Calculate Moran's I
+sq.gr.spatial_autocorr(
+    adata,
+    mode='moran',
+    n_perms=100,
+    n_jobs=1
+)
+
+# View results
+morans = adata.uns['moranI']
+top_spatial = morans.nsmallest(20, 'pval_norm')
+
+# Visualize top spatially variable genes
+sc.pl.spatial(adata, color=top_spatial['names'].tolist()[:6], ncols=3)
+```
+
+### Spatial Clustering with Leiden
+
+```python
+# Spatial Leiden (considers spatial proximity)
+sq.gr.spatial_neighbors(adata, coord_type='grid')
+
+sc.tl.leiden(adata, obsp='spatial_connectivities', key_added='spatial_leiden')
+
+# Compare with regular clustering
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+sc.pl.spatial(adata, color='leiden', ax=ax1, show=False, title='Regular Leiden')
+sc.pl.spatial(adata, color='spatial_leiden', ax=ax2, show=False, title='Spatial Leiden')
+```
+
+## Neighborhood Analysis
+
+### Co-occurrence and Interaction
+
+```python
+# Compute co-occurrence
+sq.gr.co_occurrence(
+    adata,
+    cluster_key='leiden'
+)
+
+# Visualize
+sq.pl.co_occurrence(
+    adata,
+    cluster_key='leiden',
+    clusters='0',
+    figsize=(8, 8)
+)
+
+# Neighborhood enrichment
+sq.gr.nhood_enrichment(adata, cluster_key='leiden')
+sq.pl.nhood_enrichment(adata, cluster_key='leiden')
+```
+
+### Spatial Statistics
+
+```python
+# Ripley's statistics
+sq.gr.ripley(adata, cluster_key='leiden', mode='L')
+
+# Visualize
+sq.pl.ripley(adata, cluster_key='leiden')
+```
+
+## Ligand-Receptor Interaction
+
+```python
+# Compute ligrec interactions
+sq.gr.ligrec(
+    adata,
+    n_perms=100,
+    cluster_key='leiden',
+    interactions_params={"resources": "consensus"}
+)
+
+# Visualize
+sq.pl.ligrec(
+    adata,
+    cluster_key='leiden',
+    source_groups='0',
+    target_groups='1'
+)
+```
+
+## Integration with scRNA-seq
+
+### Cell Type Deconvolution
+
+```python
+# Using Tangram
+import tangram as tg
+
+# Load reference scRNA-seq
+adata_sc = sc.read_h5ad('reference_scrna.h5ad')
+
+# Map scRNA-seq to spatial
+tg.pp_adatas(adata_sc, adata, genes=None)
+
+ad_map = tg.map_cells_to_space(
+    adata_sc,
+    adata,
+    mode='cells',
+    device='cpu'
+)
+
+# Transfer cell type labels
+tg.project_cell_annotations(ad_map, adata, annotation='cell_type')
+
+# Visualize predicted cell types
+sc.pl.spatial(adata, color='cell_type', size=1.5)
+```
+
+### Cell2location
+
+```python
+import cell2location
+
+# Estimate reference signatures
+from cell2location.utils.filtering import filter_genes
+
+selected_genes = filter_genes(adata_sc, cell_count_cutoff=5)
+
+# Train reference model
+from cell2location.models import RegressionModel
+
+ref_model = RegressionModel.setup_anndata(
+    adata_sc,
+    labels_key='cell_type'
+)
+
+ref_model.train(max_epochs=250)
+
+# Map to spatial
+from cell2location.models import Cell2location
+
+mod = Cell2location.setup_anndata(adata, batch_key="sample")
+mod.train(max_epochs=30000)
+
+# Get results
+adata = mod.export_posterior(
+    adata,
+    sample_kwargs={'num_samples': 1000}
+)
+
+# Visualize cell type abundances
+cell_types = adata.obs.columns[adata.obs.columns.str.startswith('cell_type_')]
+
+for ct in cell_types[:4]:
+    sc.pl.spatial(adata, color=ct, cmap='viridis', size=1.5)
+```
+
+## Spatial Domains
+
+### BayesSpace
+
+```python
+# Via rpy2
+import rpy2.robjects as ro
+
+ro.r('''
+library(BayesSpace)
+
+# Run BayesSpace
+sce <- spatialPreprocess(sce)
+sce <- spatialCluster(sce, q=7, platform="Visium", nrep=10000)
+
+# Enhanced resolution
+sce_enhanced <- spatialEnhance(sce, q=7, platform="Visium")
+''')
+```
+
+## Best Practices
+
+::: {.callout-tip}
+## Spatial Analysis Tips
+
+- Always visualize on tissue
+- Consider spatial autocorrelation
+- Validate with histology/imaging
+- Use integration for cell type assignment
+- Account for tissue heterogeneity
+- Check for batch effects
+- Use spatial statistics appropriately
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Load Visium dataset
+2. Perform QC and visualization
+3. Cluster spots
+4. Identify spatially variable genes
+5. Analyze spatial clustering patterns
+6. Perform neighborhood enrichment
+7. Integrate with scRNA-seq reference
+8. Visualize cell type spatial distribution
+:::
+
+## Common Challenges
+
+- Low resolution (Visium: multiple cells per spot)
+- Batch effects between slides
+- Image alignment issues
+- Computational intensity
+- Integration with scRNA-seq
+- Interpretation of spatial patterns
+
+## Key Takeaways
+
+- Spatial transcriptomics reveals tissue organization
+- Multiple technologies with different resolutions
+- Squidpy enables comprehensive spatial analysis
+- Spatially variable genes show location-specific patterns
+- Integration with scRNA-seq enhances interpretation
+- Spatial context is crucial for understanding biology
+
+## Additional Resources
+
+- [Squidpy Documentation](https://squidpy.readthedocs.io/)
+- [Tangram Documentation](https://tangram-sc.readthedocs.io/)
+- [10x Visium Resources](https://www.10xgenomics.com/products/spatial-gene-expression)
+- [Spatial Transcriptomics Review](https://www.nature.com/articles/s41592-022-01409-2)
+
+## Next Module
+
+Apply deep learning to single-cell data!
+
+[Continue to Module 15: Deep Learning Part 1 →](15-deep-learning-part1.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

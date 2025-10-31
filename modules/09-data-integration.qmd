@@ -1,0 +1,287 @@
+---
+title: "Module 9: Data Integration"
+subtitle: "Combining Multiple Single-Cell Datasets"
+---
+
+## Overview
+
+Integrating multiple single-cell datasets enables meta-analyses, removes batch effects, and increases statistical power.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand batch effects in single-cell data
+- Apply integration methods (Harmony, Scanorama, etc.)
+- Evaluate integration quality
+- Choose appropriate integration strategies
+:::
+
+## Why Data Integration?
+
+**Challenges**:
+- Technical variation between experiments
+- Different sequencing depths
+- Platform differences
+- Sample preparation variations
+
+**Goals**:
+- Remove technical variation
+- Preserve biological variation
+- Enable cross-study comparisons
+
+## Batch Effects
+
+### Sources of Batch Effects
+
+- Different laboratories
+- Different sequencing runs
+- Different 10x chip lanes
+- Different operators
+- Different time points
+- Different protocols
+
+### Detecting Batch Effects
+
+```python
+import scanpy as sc
+
+# Visualize before integration
+sc.pl.umap(adata, color=['batch', 'cell_type'])
+
+# Check mixing with kBET or LISI
+```
+
+## Integration Methods
+
+### 1. Harmony
+
+```python
+import scanpy.external as sce
+
+# Run Harmony
+sce.pp.harmony_integrate(adata, key='batch')
+
+# Compute UMAP on integrated space
+sc.pp.neighbors(adata, use_rep='X_pca_harmony')
+sc.tl.umap(adata)
+
+# Visualize
+sc.pl.umap(adata, color=['batch', 'cell_type'])
+```
+
+### 2. Scanorama
+
+```python
+import scanorama
+
+# Split by batch
+adatas = [adata[adata.obs['batch'] == b] for b in adata.obs['batch'].unique()]
+
+# Integrate
+scanorama.integrate_scanpy(adatas, dimred=50)
+
+# Merge back
+adata_integrated = adatas[0].concatenate(adatas[1:])
+```
+
+### 3. Combat
+
+```python
+from scanpy.pp import combat
+
+# Apply Combat
+sc.pp.combat(adata, key='batch')
+```
+
+### 4. BBKNN
+
+```python
+import bbknn
+
+# Run BBKNN
+bbknn.bbknn(adata, batch_key='batch', n_pcs=30)
+
+# Compute UMAP
+sc.tl.umap(adata)
+```
+
+### 5. Seurat Integration (via R)
+
+```python
+# Export to h5ad
+adata.write('data_for_seurat.h5ad')
+
+# Run in R:
+# library(Seurat)
+# library(SeuratDisk)
+# Convert("data_for_seurat.h5ad", dest="h5seurat")
+# seurat_obj <- LoadH5Seurat("data_for_seurat.h5seurat")
+# # Run Seurat integration
+```
+
+## Comparison of Methods
+
+| Method | Speed | Preservation | Best For |
+|--------|-------|--------------|----------|
+| Harmony | Fast | Good | Large datasets |
+| Scanorama | Medium | Good | Multiple batches |
+| Combat | Fast | Moderate | Simple batch effects |
+| BBKNN | Fast | Good | Graph-based analyses |
+| Seurat | Slow | Excellent | Small-medium datasets |
+
+## Evaluating Integration
+
+### Visual Assessment
+
+```python
+# Before and after comparison
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+sc.pl.umap(adata_raw, color='batch', ax=ax1, show=False, title='Before')
+sc.pl.umap(adata_int, color='batch', ax=ax2, show=False, title='After')
+
+# Check biological signal preservation
+sc.pl.umap(adata_int, color=['batch', 'cell_type', 'marker_gene'])
+```
+
+### Quantitative Metrics
+
+```python
+# Calculate LISI (Local Inverse Simpson's Index)
+import lisi
+
+# Integration score (iLISI)
+ilisi = lisi.compute_lisi(adata.obsm['X_pca'], adata.obs[['batch']], ['batch'])
+
+# Conservation score (cLISI)
+clisi = lisi.compute_lisi(adata.obsm['X_pca'], adata.obs[['cell_type']], ['cell_type'])
+```
+
+### Cell Type Mixing
+
+```python
+# Check if same cell types from different batches mix
+for cell_type in adata.obs['cell_type'].unique():
+    subset = adata[adata.obs['cell_type'] == cell_type]
+    sc.pl.umap(subset, color='batch', title=f'{cell_type}')
+```
+
+## Best Practices
+
+::: {.callout-tip}
+## Integration Tips
+
+- Always visualize data before integration
+- Try multiple methods and compare
+- Verify biological signal preservation
+- Don't over-integrate (can remove biology)
+- Keep unintegrated data for reference
+- Consider integration necessity
+:::
+
+## When NOT to Integrate
+
+- Studying batch-specific effects
+- Truly different biological conditions
+- Developmental time series
+- Perturbation experiments
+
+## Practical Workflow
+
+```python
+# 1. Load and QC all datasets
+adata1 = sc.read_10x_mtx('sample1/')
+adata2 = sc.read_10x_mtx('sample2/')
+
+# 2. QC each dataset separately
+for adata in [adata1, adata2]:
+    sc.pp.filter_cells(adata, min_genes=200)
+    sc.pp.filter_genes(adata, min_cells=3)
+
+# 3. Merge datasets
+adata = adata1.concatenate(adata2, batch_key='batch')
+
+# 4. Standard preprocessing
+sc.pp.normalize_total(adata)
+sc.pp.log1p(adata)
+sc.pp.highly_variable_genes(adata, batch_key='batch')
+
+# 5. Visualize before integration
+sc.pp.pca(adata)
+sc.pp.neighbors(adata)
+sc.tl.umap(adata)
+sc.pl.umap(adata, color='batch')
+
+# 6. Integrate
+sce.pp.harmony_integrate(adata, key='batch')
+
+# 7. Re-compute neighbors and UMAP
+sc.pp.neighbors(adata, use_rep='X_pca_harmony')
+sc.tl.umap(adata)
+
+# 8. Visualize after integration
+sc.pl.umap(adata, color=['batch', 'cell_type'])
+
+# 9. Evaluate integration
+# Check mixing and biological signal
+```
+
+## Handling Different Integration Scenarios
+
+### Same Cell Types, Different Batches
+
+```python
+# Use aggressive integration
+sce.pp.harmony_integrate(adata, key='batch', theta=2)
+```
+
+### Different Conditions
+
+```python
+# Use mild integration
+sce.pp.harmony_integrate(adata, key='batch', theta=0.5)
+```
+
+### Multiple Batch Variables
+
+```python
+# Integrate multiple factors
+sce.pp.harmony_integrate(adata, key=['batch', 'donor', 'lane'])
+```
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Load two or more single-cell datasets
+2. Visualize batch effects
+3. Apply 2-3 integration methods
+4. Compare results qualitatively
+5. Evaluate integration quality
+6. Choose best method for your data
+:::
+
+## Key Takeaways
+
+- Batch effects are common in scRNA-seq
+- Multiple integration methods available
+- No single best method for all cases
+- Evaluate both mixing and biology preservation
+- Over-integration can remove real biology
+
+## Additional Resources
+
+- [Benchmarking Integration Methods](https://www.nature.com/articles/s41592-021-01336-8)
+- [Harmony Documentation](https://portals.broadinstitute.org/harmony/)
+- [Integration Best Practices](https://www.sc-best-practices.org/)
+
+## Next Module
+
+With integrated data, let's identify cell populations through clustering!
+
+[Continue to Module 10: Clustering →](10-clustering.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

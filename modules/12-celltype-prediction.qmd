@@ -1,0 +1,425 @@
+---
+title: "Module 12: Cell Type Prediction"
+subtitle: "Automated Cell Type Annotation Using Reference Datasets"
+---
+
+## Overview
+
+Automated cell type annotation transfers labels from well-annotated reference datasets to query datasets, enabling consistent and scalable analysis.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand reference-based annotation
+- Use tools like CellTypist, scANVI, and Azimuth
+- Evaluate annotation quality
+- Handle ambiguous annotations
+- Create custom reference datasets
+:::
+
+## Why Automated Annotation?
+
+**Challenges of manual annotation**:
+- Time-consuming
+- Subjective
+- Inconsistent across studies
+- Requires extensive domain knowledge
+
+**Benefits of automated methods**:
+- Fast and scalable
+- Consistent and reproducible
+- Leverage existing knowledge
+- Handle large datasets
+
+## Annotation Strategies
+
+### 1. Marker-Based (Simple)
+```python
+import scanpy as sc
+
+# Define marker genes
+markers = {
+    'Neurons': ['SYN1', 'SNAP25', 'RBFOX3'],
+    'Astrocytes': ['GFAP', 'AQP4', 'SLC1A3'],
+    'Oligodendrocytes': ['MBP', 'MOG', 'PLP1']
+}
+
+# Score cells for each type
+for cell_type, genes in markers.items():
+    sc.tl.score_genes(adata, genes, score_name=f'{cell_type}_score')
+
+# Assign based on highest score
+scores = [f'{ct}_score' for ct in markers.keys()]
+adata.obs['cell_type'] = adata.obs[scores].idxmax(axis=1)
+```
+
+### 2. Reference-Based Transfer
+
+Most sophisticated approach using machine learning.
+
+## CellTypist
+
+### Installation
+
+```bash
+pip install celltypist
+```
+
+### Basic Usage
+
+```python
+import celltypist
+from celltypist import models
+
+# Download model
+models.download_models(model='Immune_All_Low.pkl')
+
+# Load model
+model = models.Model.load(model='Immune_All_Low.pkl')
+
+# Predict
+predictions = celltypist.annotate(
+    adata,
+    model='Immune_All_Low.pkl',
+    majority_voting=True
+)
+
+# Get annotated object
+adata_predicted = predictions.to_adata()
+
+# View predictions
+print(adata_predicted.obs[['predicted_labels', 'conf_score']])
+
+# Visualize
+sc.pl.umap(adata_predicted, color=['predicted_labels', 'conf_score'])
+```
+
+### Available Models
+
+```python
+# List available models
+models.models_description()
+
+# Brain-specific models
+# - 'Developing_Human_Brain.pkl'
+# - 'Adult_Mouse_Brain.pkl'
+```
+
+### Custom Training
+
+```python
+# Train custom model
+from celltypist import train
+
+# Prepare training data
+new_model = train(
+    adata_reference,
+    labels='cell_type',
+    n_jobs=10,
+    feature_selection=True
+)
+
+# Save model
+new_model.write('my_custom_model.pkl')
+```
+
+## scANVI (Single-Cell ANnotation using Variational Inference)
+
+```python
+import scvi
+
+# Setup scANVI
+scvi.model.SCVI.setup_anndata(
+    adata,
+    layer="counts",
+    batch_key="batch",
+    labels_key="cell_type"
+)
+
+# Train scVI first
+vae = scvi.model.SCVI(adata)
+vae.train()
+
+# Train scANVI
+scanvi_model = scvi.model.SCANVI.from_scvi_model(
+    vae,
+    unlabeled_category="Unknown",
+    labels_key="cell_type"
+)
+scanvi_model.train(max_epochs=20)
+
+# Predict
+adata.obs["predicted_cell_type"] = scanvi_model.predict()
+
+# Get uncertainty
+adata.obs["prediction_score"] = scanvi_model.predict(soft=True).max(axis=1)
+
+# Visualize
+sc.pl.umap(adata, color=['predicted_cell_type', 'prediction_score'])
+```
+
+## Azimuth (Seurat-based)
+
+```python
+# Through R interface
+import rpy2.robjects as ro
+
+ro.r('''
+library(Seurat)
+library(Azimuth)
+
+# Load query data
+query <- Load10X_Spatial("path/to/data")
+
+# Run Azimuth
+query <- RunAzimuth(query, reference = "pbmcref")
+
+# Predictions stored in metadata
+''')
+```
+
+## SingleR
+
+```python
+# Via rpy2
+ro.r('''
+library(SingleR)
+library(celldex)
+
+# Load reference
+ref <- HumanPrimaryCellAtlasData()
+
+# Run SingleR
+predictions <- SingleR(
+    test = query_data,
+    ref = ref,
+    labels = ref$label.main
+)
+''')
+```
+
+## Symphony
+
+```python
+# Reference mapping with Symphony
+from symphony import Symphony
+
+# Load reference
+reference = Symphony.load_reference('reference_name')
+
+# Map query
+query_mapped = reference.map_query(
+    adata_query,
+    variables=['cell_type']
+)
+
+# View predictions
+print(query_mapped.obs['cell_type_predicted'])
+```
+
+## Evaluating Predictions
+
+### Confidence Scores
+
+```python
+# Check prediction confidence
+sc.pl.violin(adata, 'conf_score', groupby='predicted_labels')
+
+# Filter low-confidence predictions
+threshold = 0.5
+adata_confident = adata[adata.obs['conf_score'] > threshold]
+
+print(f"High confidence: {adata_confident.n_obs}/{adata.n_obs}")
+```
+
+### Agreement with Clustering
+
+```python
+# Compare with unsupervised clusters
+import pandas as pd
+
+confusion = pd.crosstab(
+    adata.obs['leiden'],
+    adata.obs['predicted_labels']
+)
+
+# Visualize
+import seaborn as sns
+plt.figure(figsize=(10, 8))
+sns.heatmap(confusion, annot=True, fmt='d', cmap='Blues')
+plt.title('Cluster vs Predicted Cell Type')
+plt.show()
+```
+
+### Marker Gene Validation
+
+```python
+# Check if predicted types express expected markers
+markers = ['SYN1', 'GFAP', 'MBP', 'CX3CR1']
+
+sc.pl.dotplot(
+    adata,
+    markers,
+    groupby='predicted_labels',
+    dendrogram=True
+)
+```
+
+## Handling Ambiguous Cells
+
+### Mixed/Unknown Cells
+
+```python
+# Identify cells with low confidence
+adata.obs['annotation_quality'] = pd.cut(
+    adata.obs['conf_score'],
+    bins=[0, 0.3, 0.7, 1.0],
+    labels=['Low', 'Medium', 'High']
+)
+
+# Visualize
+sc.pl.umap(adata, color='annotation_quality')
+
+# Further analyze ambiguous cells
+ambiguous = adata[adata.obs['annotation_quality'] == 'Low']
+sc.pl.umap(ambiguous, color='predicted_labels')
+```
+
+### Doublet-Like Cells
+
+```python
+# Cells expressing markers from multiple types
+# May indicate doublets or transitional states
+
+# Check for multi-type expression
+from collections import Counter
+
+def check_multi_marker(adata, markers_dict, threshold=0.5):
+    """Check if cells express markers from multiple types."""
+    results = []
+
+    for cell_type, markers in markers_dict.items():
+        # Score for each type
+        expr = adata[:, markers].X.mean(axis=1)
+        results.append((cell_type, expr > threshold))
+
+    # Count how many types each cell expresses
+    multi_type = sum(results, axis=0)
+    return multi_type > 1
+```
+
+## Creating Reference Datasets
+
+### Requirements
+
+- High-quality, well-annotated data
+- Multiple biological replicates
+- Representative cell types
+- Minimal batch effects
+
+### Building Reference
+
+```python
+# 1. Curate high-quality reference
+reference = adata[adata.obs['annotation_confidence'] == 'High']
+
+# 2. Ensure cell type labels are consistent
+reference.obs['cell_type'] = reference.obs['cell_type'].astype('category')
+
+# 3. Process reference
+sc.pp.normalize_total(reference)
+sc.pp.log1p(reference)
+
+# 4. Train model
+from celltypist import train
+
+model = train(
+    reference,
+    labels='cell_type',
+    n_jobs=10,
+    max_iter=100
+)
+
+# 5. Save
+model.write('my_brain_reference.pkl')
+```
+
+## Hierarchical Annotation
+
+```python
+# Coarse-to-fine annotation strategy
+
+# 1. Broad categories first
+predictions_broad = celltypist.annotate(
+    adata,
+    model='Broad_Categories.pkl'
+)
+
+# 2. Fine-grained within each category
+for broad_type in predictions_broad.predicted_labels.unique():
+    subset = adata[predictions_broad.predicted_labels == broad_type]
+
+    predictions_fine = celltypist.annotate(
+        subset,
+        model=f'{broad_type}_Detailed.pkl'
+    )
+
+    # Merge results
+    adata.obs.loc[subset.obs_names, 'detailed_type'] = \
+        predictions_fine.predicted_labels
+```
+
+## Best Practices
+
+::: {.callout-tip}
+## Annotation Tips
+
+- Use multiple methods and compare
+- Check prediction confidence scores
+- Validate with known marker genes
+- Use reference from similar tissue/species
+- Combine automated + manual curation
+- Document annotation decisions
+- Consider hierarchical approaches
+- Update annotations as new data emerges
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Load a query single-cell dataset
+2. Apply CellTypist with pre-trained model
+3. Evaluate prediction confidence
+4. Compare with unsupervised clusters
+5. Validate with marker gene expression
+6. Identify and investigate ambiguous cells
+7. Refine annotations if needed
+:::
+
+## Key Takeaways
+
+- Automated annotation scales to large datasets
+- Multiple tools available with different strengths
+- Always validate predictions
+- Confidence scores indicate reliability
+- No method is perfect—manual curation may be needed
+- Choose reference carefully
+
+## Additional Resources
+
+- [CellTypist Documentation](https://www.celltypist.org/)
+- [scvi-tools Tutorials](https://docs.scvi-tools.org/)
+- [Azimuth Web App](https://azimuth.hubmapconsortium.org/)
+- [Cell Type Annotation Review](https://www.nature.com/articles/s41576-022-00534-z)
+
+## Next Module
+
+Explore cellular dynamics with trajectory inference!
+
+[Continue to Module 13: Trajectory Inference →](13-trajectory-inference.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

@@ -1,0 +1,220 @@
+---
+title: "About BRAIN"
+subtitle: "Course Information & Team"
+---
+
+## About the Course
+
+**Bioinformatics Research with AI in Neurosciences (BRAIN)** is a comprehensive research-oriented training program designed to bridge the gap between neuroscience, bioinformatics, and artificial intelligence.
+
+::: {.card}
+### Mission
+
+Our mission is to empower researchers, students, and professionals with cutting-edge computational skills to analyze complex neurogenomics data and apply AI methods to advance neuroscience research.
+:::
+
+::: {.card}
+### Vision
+
+We envision a future where computational neuroscience and AI-driven approaches are integral to understanding brain function, disease mechanisms, and developing novel therapeutic strategies.
+:::
+
+## Course Objectives
+
+By the end of this training program, participants will be able to:
+
+- Understand the fundamentals of neurogenomics and single-cell technologies
+- Navigate and utilize Linux command-line tools for bioinformatics
+- Program in Python for data analysis and visualization
+- Process and analyze single-cell RNA-seq data from raw data to biological insights
+- Apply quality control, dimensionality reduction, and clustering methods
+- Perform differential expression and cell type annotation
+- Conduct trajectory inference and spatial transcriptomics analyses
+- Implement deep learning methods for single-cell genomics
+- Integrate AI approaches into neuroscience research workflows
+
+## Instructors & Team
+
+::: {.callout-note}
+## Course Instructors
+
+### Lead Instructor
+**[Name]**
+*Title/Position*
+*Institution/Organization*
+
+Brief bio and expertise in neurogenomics, bioinformatics, and AI.
+
+### Co-Instructors
+**[Name]**
+*Title/Position*
+*Institution/Organization*
+
+Brief bio and area of expertise.
+
+**[Name]**
+*Title/Position*
+*Institution/Organization*
+
+Brief bio and area of expertise.
+:::
+
+## Target Audience
+
+This course is designed for:
+
+- Graduate students in neuroscience, bioinformatics, or computational biology
+- Postdoctoral researchers working with neurogenomics data
+- Faculty members looking to expand their computational skills
+- Bioinformaticians interested in neuroscience applications
+- Data scientists transitioning to biological research
+- Medical researchers studying neurological disorders
+
+## Prerequisites
+
+::: {.callout-important}
+## What You Need
+
+**Required**:
+- Basic understanding of molecular biology and genetics
+- Access to a computer (Windows, Mac, or Linux)
+- Willingness to learn programming and command-line tools
+
+**Helpful but not required**:
+- Prior experience with Python or R
+- Familiarity with Linux/Unix command line
+- Background in statistics or data analysis
+:::
+
+## Course Philosophy
+
+### Hands-On Learning
+We believe in learning by doing. Every module includes practical exercises with real-world datasets.
+
+### Research-Oriented
+Course materials are based on current research practices and cutting-edge methods used in leading neuroscience laboratories.
+
+### Open Science
+We promote open-source tools, reproducible research practices, and collaborative science.
+
+### Supportive Environment
+We foster a welcoming learning environment where questions are encouraged and mistakes are learning opportunities.
+
+## Technical Requirements
+
+### Software & Tools
+
+Throughout the course, you will work with:
+
+- **Operating System**: Linux/Unix (or WSL for Windows users)
+- **Programming Languages**: Python (primary), bash scripting
+- **Key Tools**:
+  - CellRanger (10x Genomics)
+  - Scanpy (Python single-cell analysis)
+  - PyTorch/TensorFlow (deep learning)
+  - Jupyter Notebooks
+  - Git/GitHub
+
+### Hardware Requirements
+
+- **Minimum**: 8GB RAM, 50GB free disk space
+- **Recommended**: 16GB+ RAM, 100GB+ free disk space
+- **Note**: Some computationally intensive modules may benefit from access to HPC resources
+
+## Learning Outcomes
+
+Upon successful completion, participants will receive:
+
+- Certificate of completion
+- Portfolio of coding projects and analyses
+- Access to course materials and resources
+- Connection to a community of computational neuroscientists
+
+## Course Development
+
+This course was developed with support from:
+
+::: {.card}
+- [Institution/Organization Name]
+- [Funding Agency/Grant Information]
+- [Collaborating Institutions]
+:::
+
+## Contact Information
+
+::: {.callout-note}
+## Get in Touch
+
+**General Inquiries**
+Email: [course-email@example.com]
+
+**Technical Support**
+Email: [support@example.com]
+
+**Social Media**
+- GitHub: [@brain-course](https://github.com/yourusername/BRAIN)
+- Twitter: [@brain_course](https://twitter.com/)
+- LinkedIn: [BRAIN Course](https://linkedin.com/)
+
+**Office Hours**
+Schedule TBA - Check the [schedule page](schedule.qmd) for details
+:::
+
+## Frequently Asked Questions
+
+::: {.card}
+### Is this course suitable for beginners?
+
+Yes! While some modules are advanced, we start with foundations and build progressively. No prior programming experience is required, though it is helpful.
+:::
+
+::: {.card}
+### What is the time commitment?
+
+Each module requires 2-4 hours for lectures and tutorials, plus 2-3 hours for self-study and practice. Total time commitment is approximately 60-80 hours over 8 weeks.
+:::
+
+::: {.card}
+### Will I get a certificate?
+
+Yes, participants who complete all modules and meet the requirements will receive a certificate of completion.
+:::
+
+::: {.card}
+### Can I take individual modules?
+
+The course is designed as a comprehensive program with sequential modules. However, some flexibility may be available depending on your background and goals.
+:::
+
+::: {.card}
+### What datasets will we use?
+
+We use publicly available neuroscience datasets, including single-cell RNA-seq data from brain tissues, neurological disease models, and developmental studies.
+:::
+
+::: {.card}
+### Is there a cost to participate?
+
+[Add information about course fees, if any, or mention that it's free]
+:::
+
+## Acknowledgments
+
+We would like to thank:
+
+- Our students and participants for their engagement and feedback
+- The open-source community for developing the tools we teach
+- Contributing instructors and teaching assistants
+- Institutions and organizations providing support
+
+---
+
+## Stay Connected
+
+::: {.callout-tip}
+## Join Our Community
+
+Stay updated with course announcements, share resources, and connect with fellow participants.
+
+[Back to Home](index.qmd){.btn} [View Schedule](schedule.qmd){.btn}
+:::

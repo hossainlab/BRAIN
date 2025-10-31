@@ -1,0 +1,344 @@
+---
+title: "Module 6: Fundamentals of Python - Part 2"
+subtitle: "Advanced Python and Scientific Computing"
+---
+
+## Overview
+
+Building on Python fundamentals, this module covers NumPy, Pandas, and data visualization—essential tools for bioinformatics analysis.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Master NumPy for numerical computing
+- Use Pandas for data manipulation
+- Create visualizations with Matplotlib and Seaborn
+- Work with biological data formats
+- Optimize code performance
+:::
+
+## NumPy: Numerical Python
+
+### Array Creation
+
+```python
+import numpy as np
+
+# Create arrays
+arr = np.array([1, 2, 3, 4, 5])
+matrix = np.array([[1, 2, 3], [4, 5, 6]])
+
+# Special arrays
+zeros = np.zeros((3, 3))
+ones = np.ones((2, 4))
+identity = np.eye(3)
+random = np.random.rand(3, 3)
+```
+
+### Array Operations
+
+```python
+# Arithmetic
+a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+c = a + b
+d = a * b
+e = a ** 2
+
+# Matrix operations
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+C = np.dot(A, B)  # Matrix multiplication
+```
+
+### Statistical Operations
+
+```python
+data = np.random.randn(1000)
+
+mean = np.mean(data)
+median = np.median(data)
+std = np.std(data)
+var = np.var(data)
+minimum = np.min(data)
+maximum = np.max(data)
+```
+
+## Pandas: Data Analysis
+
+### DataFrames
+
+```python
+import pandas as pd
+
+# Create DataFrame
+data = {
+    'gene': ['BDNF', 'SYN1', 'GFAP'],
+    'expression': [100, 150, 75],
+    'cell_type': ['neuron', 'neuron', 'astrocyte']
+}
+df = pd.DataFrame(data)
+
+# Read from file
+df = pd.read_csv('data.csv')
+df = pd.read_excel('data.xlsx')
+df = pd.read_table('data.tsv', sep='\t')
+```
+
+### Data Exploration
+
+```python
+# View data
+print(df.head())
+print(df.tail())
+print(df.info())
+print(df.describe())
+
+# Dimensions
+rows, cols = df.shape
+
+# Column names
+columns = df.columns
+
+# Data types
+dtypes = df.dtypes
+```
+
+### Data Selection
+
+```python
+# Select columns
+genes = df['gene']
+subset = df[['gene', 'expression']]
+
+# Select rows
+first_row = df.iloc[0]
+slice_rows = df.iloc[0:5]
+
+# Conditional selection
+high_expr = df[df['expression'] > 100]
+neurons = df[df['cell_type'] == 'neuron']
+
+# Query
+result = df.query('expression > 100 and cell_type == "neuron"')
+```
+
+### Data Manipulation
+
+```python
+# Add column
+df['log_expression'] = np.log2(df['expression'] + 1)
+
+# Remove column
+df = df.drop('old_column', axis=1)
+
+# Rename columns
+df = df.rename(columns={'old_name': 'new_name'})
+
+# Sort
+df_sorted = df.sort_values('expression', ascending=False)
+
+# Group by
+grouped = df.groupby('cell_type')['expression'].mean()
+
+# Merge DataFrames
+merged = pd.merge(df1, df2, on='gene')
+```
+
+## Data Visualization
+
+### Matplotlib Basics
+
+```python
+import matplotlib.pyplot as plt
+
+# Line plot
+plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+plt.xlabel('X axis')
+plt.ylabel('Y axis')
+plt.title('Simple Plot')
+plt.show()
+
+# Scatter plot
+x = np.random.randn(100)
+y = np.random.randn(100)
+plt.scatter(x, y, alpha=0.5)
+plt.show()
+
+# Histogram
+data = np.random.randn(1000)
+plt.hist(data, bins=30)
+plt.show()
+
+# Multiple subplots
+fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+axes[0, 0].plot(x, y)
+axes[0, 1].hist(data)
+plt.tight_layout()
+plt.show()
+```
+
+### Seaborn for Statistical Plots
+
+```python
+import seaborn as sns
+
+# Set style
+sns.set_style('whitegrid')
+
+# Distribution plot
+sns.histplot(data, kde=True)
+
+# Box plot
+sns.boxplot(x='cell_type', y='expression', data=df)
+
+# Violin plot
+sns.violinplot(x='cell_type', y='expression', data=df)
+
+# Heatmap
+corr = df.corr()
+sns.heatmap(corr, annot=True, cmap='coolwarm')
+
+# Pair plot
+sns.pairplot(df, hue='cell_type')
+```
+
+## Working with Biological Data
+
+### Processing Gene Expression Data
+
+```python
+# Load expression matrix
+expr = pd.read_csv('expression_matrix.csv', index_col=0)
+
+# Log transformation
+expr_log = np.log2(expr + 1)
+
+# Normalization
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+expr_scaled = scaler.fit_transform(expr)
+
+# Filter low-expressed genes
+expr_filtered = expr[expr.mean(axis=1) > 10]
+
+# Calculate correlations
+gene_corr = expr.T.corr()
+```
+
+### Sequence Analysis
+
+```python
+def gc_content(sequence):
+    """Calculate GC content of DNA sequence."""
+    gc = sequence.count('G') + sequence.count('C')
+    return gc / len(sequence) * 100
+
+def reverse_complement(sequence):
+    """Return reverse complement of DNA sequence."""
+    complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
+    rev_comp = ''.join(complement[base] for base in reversed(sequence))
+    return rev_comp
+
+# Count k-mers
+def count_kmers(sequence, k):
+    """Count k-mers in sequence."""
+    kmers = {}
+    for i in range(len(sequence) - k + 1):
+        kmer = sequence[i:i+k]
+        kmers[kmer] = kmers.get(kmer, 0) + 1
+    return kmers
+```
+
+## Performance Optimization
+
+### Vectorization
+
+```python
+# Slow: Loop
+result = []
+for x in data:
+    result.append(x ** 2)
+
+# Fast: Vectorized
+result = data ** 2
+
+# Pandas apply
+df['log_expr'] = df['expression'].apply(np.log2)
+
+# Vectorized alternative
+df['log_expr'] = np.log2(df['expression'])
+```
+
+### Memory Efficiency
+
+```python
+# Check memory usage
+df.memory_usage()
+
+# Optimize dtypes
+df['category_col'] = df['category_col'].astype('category')
+
+# Use chunks for large files
+for chunk in pd.read_csv('large_file.csv', chunksize=10000):
+    process(chunk)
+```
+
+## Practical Applications
+
+### Single-Cell Data Processing
+
+```python
+import scanpy as sc
+
+# Load data
+adata = sc.read_10x_mtx('filtered_matrix/')
+
+# Basic QC
+sc.pp.filter_cells(adata, min_genes=200)
+sc.pp.filter_genes(adata, min_cells=3)
+
+# Calculate QC metrics
+adata.var['mt'] = adata.var_names.str.startswith('MT-')
+sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], inplace=True)
+
+# Visualize
+sc.pl.violin(adata, ['n_genes_by_counts', 'total_counts'])
+```
+
+## Practical Exercises
+
+::: {.callout-important}
+## Hands-On Practice
+
+1. Load and explore a gene expression dataset
+2. Calculate summary statistics
+3. Filter genes and samples
+4. Create publication-quality plots
+5. Perform correlation analysis
+:::
+
+## Key Takeaways
+
+- NumPy provides efficient numerical operations
+- Pandas excels at data manipulation
+- Matplotlib and Seaborn create visualizations
+- Vectorization improves performance
+- These tools are essential for bioinformatics
+
+## Additional Resources
+
+- [NumPy Documentation](https://numpy.org/doc/)
+- [Pandas Documentation](https://pandas.pydata.org/docs/)
+- [Matplotlib Gallery](https://matplotlib.org/stable/gallery/)
+- [Seaborn Tutorial](https://seaborn.pydata.org/tutorial.html)
+
+## Next Module
+
+Now that you have Python skills, let's apply them to quality control!
+
+[Continue to Module 7: Quality Control →](07-quality-control.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

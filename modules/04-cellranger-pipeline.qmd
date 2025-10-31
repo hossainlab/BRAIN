@@ -1,0 +1,329 @@
+---
+title: "Module 4: CellRanger Pipeline for Single-Cell Analysis"
+subtitle: "Processing 10x Genomics Single-Cell Data"
+---
+
+## Overview
+
+CellRanger is the official 10x Genomics pipeline for processing single-cell RNA-seq data. This module covers installation, usage, and understanding CellRanger outputs.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand the CellRanger workflow
+- Install and configure CellRanger
+- Process raw BCL or FASTQ files
+- Interpret CellRanger outputs and QC metrics
+- Aggregate multiple samples
+- Troubleshoot common issues
+:::
+
+## What is CellRanger?
+
+CellRanger is a set of analysis pipelines that process Chromium single-cell data:
+
+- **cellranger mkfastq**: Demultiplex raw base call files
+- **cellranger count**: Align reads and generate gene-cell matrices
+- **cellranger aggr**: Aggregate multiple samples
+- **cellranger reanalyze**: Re-run analysis with different parameters
+- **cellranger vdj**: Analyze V(D)J repertoires
+
+## Installation
+
+### System Requirements
+
+- Linux operating system
+- 8-core Intel or AMD processor
+- 64 GB RAM minimum
+- 1 TB free disk space
+
+### Download and Setup
+
+```bash
+# Download CellRanger
+curl -o cellranger-7.2.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.2.0.tar.gz"
+
+# Extract
+tar -xzvf cellranger-7.2.0.tar.gz
+
+# Add to PATH
+export PATH=/path/to/cellranger-7.2.0:$PATH
+
+# Verify installation
+cellranger --version
+```
+
+## Reference Genome
+
+### Download Pre-built Reference
+
+```bash
+# Human (GRCh38)
+curl -O "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2024-A.tar.gz"
+tar -xzvf refdata-gex-GRCh38-2024-A.tar.gz
+
+# Mouse (mm10)
+curl -O "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-mm10-2024-A.tar.gz"
+tar -xzvf refdata-gex-mm10-2024-A.tar.gz
+```
+
+## CellRanger Count Workflow
+
+### Basic Command
+
+```bash
+cellranger count --id=sample_name \
+                 --transcriptome=/path/to/refdata-gex-GRCh38-2024-A \
+                 --fastqs=/path/to/fastq/folder \
+                 --sample=sample_prefix \
+                 --localcores=8 \
+                 --localmem=64
+```
+
+### Parameters Explained
+
+- **--id**: Unique identifier for output folder
+- **--transcriptome**: Path to reference transcriptome
+- **--fastqs**: Directory containing FASTQ files
+- **--sample**: Sample name matching FASTQ prefix
+- **--localcores**: Number of CPU cores to use
+- **--localmem**: Memory limit in GB
+
+## Pipeline Steps
+
+### 1. FASTQ Generation (if needed)
+
+```bash
+cellranger mkfastq --run=/path/to/sequencer/output \
+                   --csv=sample_sheet.csv \
+                   --output-dir=fastqs
+```
+
+### 2. Alignment and Quantification
+
+::: {.card}
+**CellRanger count performs**:
+
+1. FASTQ read processing
+2. Barcode and UMI extraction
+3. Read alignment (STAR aligner)
+4. Gene quantification
+5. Cell calling (distinguish cells from background)
+6. UMI counting
+7. Secondary analysis (clustering, t-SNE)
+:::
+
+## Understanding Outputs
+
+### Output Directory Structure
+
+```
+sample_name/
+├── outs/
+│   ├── web_summary.html          # QC report
+│   ├── metrics_summary.csv       # Key metrics
+│   ├── filtered_feature_bc_matrix/   # Cell x gene matrix
+│   ├── raw_feature_bc_matrix/        # All barcodes
+│   ├── analysis/                 # Secondary analysis
+│   ├── molecule_info.h5         # Molecule-level info
+│   └── possorted_genome_bam.bam # Aligned reads
+```
+
+### Key Output Files
+
+::: {.module-card}
+**Essential files**:
+
+- **web_summary.html**: Interactive QC report
+- **filtered_feature_bc_matrix**: For downstream analysis
+- **cloupe.cloupe**: For Loupe Browser visualization
+- **metrics_summary.csv**: Numerical QC metrics
+:::
+
+## Quality Control Metrics
+
+### Cell-Level Metrics
+
+```
+Estimated Number of Cells
+Mean Reads per Cell
+Median Genes per Cell
+Total Genes Detected
+Median UMI Counts per Cell
+```
+
+### Sequencing Metrics
+
+```
+Number of Reads
+Valid Barcodes
+Sequencing Saturation
+Q30 Bases in Barcode/UMI/Read
+```
+
+### Mapping Metrics
+
+```
+Reads Mapped to Genome
+Reads Mapped to Transcriptome
+Reads Mapped Confidently to Transcriptome
+```
+
+## Interpreting Results
+
+### Good Quality Sample
+
+::: {.callout-tip}
+## Quality Indicators
+
+- Sequencing saturation > 50%
+- Q30 > 80% for all components
+- Valid barcodes > 90%
+- Median genes per cell > 500-1000
+- Mitochondrial % < 5-10%
+:::
+
+### Common Issues
+
+::: {.callout-important}
+## Red Flags
+
+- Low cell recovery
+- High mitochondrial content
+- Low genes per cell
+- Low sequencing saturation
+- Poor mapping rate
+:::
+
+## Aggregating Multiple Samples
+
+### Creating Aggregation CSV
+
+```csv
+library_id,molecule_h5
+sample1,/path/to/sample1/outs/molecule_info.h5
+sample2,/path/to/sample2/outs/molecule_info.h5
+sample3,/path/to/sample3/outs/molecule_info.h5
+```
+
+### Running Aggregation
+
+```bash
+cellranger aggr --id=aggregated \
+                --csv=aggregation.csv \
+                --normalize=mapped
+```
+
+## Working with CellRanger Outputs
+
+### Loading into Python (Scanpy)
+
+```python
+import scanpy as sc
+
+# Load filtered matrix
+adata = sc.read_10x_mtx(
+    'sample_name/outs/filtered_feature_bc_matrix/',
+    var_names='gene_symbols',
+    cache=True
+)
+
+# View data
+print(adata)
+```
+
+### Loading into R (Seurat)
+
+```r
+library(Seurat)
+
+# Load data
+data_dir <- 'sample_name/outs/filtered_feature_bc_matrix/'
+seurat_obj <- Read10X(data.dir = data_dir)
+seurat_obj <- CreateSeuratObject(counts = seurat_obj)
+```
+
+## Advanced Options
+
+### Cell Calling Parameters
+
+```bash
+cellranger count --id=sample \
+                 --transcriptome=refdata \
+                 --fastqs=fastqs \
+                 --expect-cells=5000 \
+                 --force-cells=3000
+```
+
+### Nuclei Isolation
+
+```bash
+cellranger count --id=sample \
+                 --transcriptome=refdata \
+                 --fastqs=fastqs \
+                 --include-introns
+```
+
+## Troubleshooting
+
+### Low Cell Recovery
+
+- Check cell viability
+- Verify loading concentration
+- Review dissociation protocol
+
+### High Mitochondrial Content
+
+- Indicates cell stress
+- Check tissue handling
+- Consider quality filtering
+
+### Low Mapping Rate
+
+- Verify correct reference genome
+- Check for contamination
+- Review sequencing quality
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Download tutorial dataset from 10x Genomics
+2. Run cellranger count
+3. Examine web_summary.html
+4. Assess data quality
+5. Load matrix into Python/R
+:::
+
+## Best Practices
+
+- Always save web_summary.html reports
+- Document CellRanger version used
+- Keep raw FASTQ files backed up
+- Use consistent file naming
+- Monitor disk space during runs
+
+## Key Takeaways
+
+- CellRanger processes raw 10x data to gene-cell matrices
+- Understanding QC metrics is crucial
+- Multiple samples can be aggregated
+- Outputs are compatible with Scanpy/Seurat
+- Proper interpretation guides downstream analysis
+
+## Additional Resources
+
+- [10x Genomics Support](https://support.10xgenomics.com/)
+- [CellRanger Documentation](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger)
+- [CellRanger Algorithms](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/algorithms/overview)
+
+## Next Module
+
+Now that you can process raw data, let's learn Python for downstream analysis!
+
+[Continue to Module 5: Fundamentals of Python Part 1 →](05-python-part1.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

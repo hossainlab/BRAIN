@@ -1,0 +1,212 @@
+---
+title: "Module 1: Introduction to Neurogenomics"
+subtitle: "Understanding the Genetic Basis of Brain Function"
+---
+
+## Overview
+
+This module introduces the field of neurogenomics, exploring how genetic information shapes brain development, function, and disease. You will learn about the fundamental concepts that bridge genomics and neuroscience.
+
+::: {.callout-note}
+## Learning Objectives
+
+By the end of this module, you will be able to:
+
+- Define neurogenomics and its importance in neuroscience research
+- Understand the genetic architecture of the brain
+- Identify key neurological disorders with genetic components
+- Recognize the role of genomics in understanding brain function
+- Appreciate current challenges and opportunities in neurogenomics research
+:::
+
+## What is Neurogenomics?
+
+Neurogenomics is the study of how the genome influences the development, structure, and function of the nervous system. It combines principles from:
+
+- **Genomics**: Study of entire genomes and their functions
+- **Neuroscience**: Study of the nervous system and brain
+- **Genetics**: Study of heredity and variation in organisms
+- **Molecular Biology**: Study of biological processes at the molecular level
+
+## The Brain and Genetic Information
+
+### Complexity of the Human Brain
+
+- Approximately 86 billion neurons
+- Trillions of synaptic connections
+- ~20,000 protein-coding genes expressed in the brain
+- Complex spatial and temporal gene expression patterns
+
+### Gene Expression in the Brain
+
+::: {.card}
+Different brain regions show distinct gene expression profiles:
+
+- **Cerebral cortex**: Higher cognitive functions
+- **Hippocampus**: Memory formation and consolidation
+- **Striatum**: Motor control and reward processing
+- **Cerebellum**: Motor coordination and learning
+:::
+
+## Applications of Neurogenomics
+
+### 1. Understanding Brain Development
+
+- Neurodevelopmental processes
+- Cell fate determination
+- Neural circuit formation
+- Synaptogenesis and plasticity
+
+### 2. Neurological Disease Research
+
+::: {.module-card}
+**Genetic contributions to brain disorders**:
+
+- Alzheimer's disease
+- Parkinson's disease
+- Autism spectrum disorders (ASD)
+- Schizophrenia
+- Epilepsy
+- Huntington's disease
+:::
+
+### 3. Personalized Medicine
+
+- Pharmacogenomics for neurological treatments
+- Genetic risk assessment
+- Targeted therapeutic interventions
+- Precision psychiatry
+
+### 4. Evolutionary Neuroscience
+
+- Brain evolution across species
+- Human-specific genetic adaptations
+- Comparative neurogenomics
+
+## Key Technologies in Neurogenomics
+
+### Genomic Technologies
+
+- **Whole genome sequencing (WGS)**
+- **Whole exome sequencing (WES)**
+- **Genome-wide association studies (GWAS)**
+- **Copy number variation (CNV) analysis**
+
+### Transcriptomic Technologies
+
+- **RNA sequencing (RNA-seq)**
+- **Single-cell RNA-seq**
+- **Spatial transcriptomics**
+- **Single-nucleus RNA-seq (snRNA-seq)**
+
+### Epigenomic Technologies
+
+- **ChIP-seq** (Chromatin immunoprecipitation sequencing)
+- **ATAC-seq** (Assay for transposase-accessible chromatin)
+- **Bisulfite sequencing** (DNA methylation)
+
+## Important Databases and Resources
+
+::: {.callout-tip}
+## Key Resources
+
+- **Allen Brain Atlas**: Comprehensive gene expression maps
+- **GTEx Portal**: Tissue-specific gene expression
+- **ENCODE**: Encyclopedia of DNA elements
+- **PsychENCODE**: Psychiatric disorder genomics
+- **gnomAD**: Genome aggregation database
+:::
+
+## Case Studies
+
+### Case Study 1: APOE and Alzheimer's Disease
+
+The APOE gene has three common variants (ε2, ε3, ε4) that significantly influence Alzheimer's disease risk:
+
+- APOE-ε4 increases risk and lowers age of onset
+- APOE-ε2 provides protective effects
+- Example of common genetic variation affecting brain health
+
+### Case Study 2: Single-Cell Atlases of Brain
+
+Recent single-cell studies have revealed:
+
+- Unprecedented cellular diversity in the brain
+- Cell-type-specific gene expression signatures
+- Disease-associated cell populations
+- Molecular mechanisms of brain disorders
+
+## Challenges in Neurogenomics
+
+1. **Cellular Heterogeneity**: Brain contains hundreds of cell types
+2. **Technical Limitations**: Accessing brain tissue in living subjects
+3. **Complexity**: Polygenic nature of most brain disorders
+4. **Data Integration**: Combining multi-modal datasets
+5. **Causality**: Distinguishing correlation from causation
+
+## Future Directions
+
+::: {.card}
+### Emerging Trends
+
+- **Multi-omics integration**: Combining genomics, transcriptomics, proteomics
+- **Single-cell technologies**: Higher resolution cellular analyses
+- **Spatial genomics**: Maintaining tissue context
+- **AI and machine learning**: Analyzing large-scale datasets
+- **Organoid models**: 3D brain models for functional studies
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+Explore the Allen Brain Atlas (https://portal.brain-map.org/):
+
+1. Search for a gene of interest (e.g., BDNF, SYN1, GFAP)
+2. Examine its expression pattern across brain regions
+3. Compare expression levels in different cell types
+4. Reflect on what the expression pattern tells you about gene function
+:::
+
+## Key Takeaways
+
+- Neurogenomics bridges genetics and neuroscience to understand brain function
+- Genetic variation contributes to brain development, function, and disease
+- Modern technologies enable unprecedented resolution of brain genomics
+- Single-cell and spatial approaches are revolutionizing the field
+- Understanding neurogenomics is essential for advancing neuroscience research
+
+## Additional Resources
+
+### Recommended Readings
+
+1. **"Principles of Neurogenomics"** - Review article on neurogenomics foundations
+2. **"Single-cell genomics in neuroscience"** - Nature Reviews Neuroscience
+3. **"The genomic landscape of neurological disorders"** - Recent comprehensive review
+
+### Video Lectures
+
+- Allen Brain Atlas overview and tutorial
+- Introduction to brain cell types and diversity
+- Genomic approaches to studying brain disease
+
+### Tools and Software
+
+- UCSC Genome Browser
+- IGV (Integrative Genomics Viewer)
+- Allen Brain Atlas portal
+
+## Next Module
+
+Ready to dive deeper into the technologies that make modern neurogenomics possible?
+
+[Continue to Module 2: Introduction to Single-Cell Technology →](02-single-cell-tech.qmd){.btn}
+
+---
+
+::: {.callout-note}
+## Questions or Feedback?
+
+If you have questions about this module, please reach out via the course discussion forum or office hours listed on the [Schedule](../schedule.qmd) page.
+:::

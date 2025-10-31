@@ -1,0 +1,306 @@
+---
+title: "Module 7: Quality Control in Single-Cell Analysis"
+subtitle: "Ensuring Data Quality for Reliable Downstream Analysis"
+---
+
+## Overview
+
+Quality control is crucial for single-cell RNA-seq analysis. This module covers identifying and filtering low-quality cells and genes.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand QC metrics for single-cell data
+- Identify low-quality cells and doublets
+- Filter genes and cells
+- Handle batch effects
+- Visualize QC metrics
+:::
+
+## Why Quality Control?
+
+Poor quality data leads to:
+- Spurious biological conclusions
+- Incorrect cell type identification
+- False differential expression
+- Wasted computational resources
+
+## Key QC Metrics
+
+### Cell-Level Metrics
+
+::: {.module-card}
+**Essential metrics**:
+
+1. **Number of genes detected** (nGene or nFeature)
+2. **Total UMI counts** (nUMI or nCount)
+3. **Mitochondrial gene percentage** (percent.mt)
+4. **Ribosomal gene percentage** (percent.ribo)
+5. **Complexity** (log10GenesPerUMI)
+:::
+
+### Gene-Level Metrics
+
+- Genes detected in how many cells
+- Mean expression level
+- Variance/dispersion
+
+## Loading Data
+
+```python
+import scanpy as sc
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load 10x data
+adata = sc.read_10x_mtx('filtered_matrix/', var_names='gene_symbols')
+
+# View data structure
+print(adata)
+```
+
+## Calculating QC Metrics
+
+```python
+# Identify mitochondrial genes
+adata.var['mt'] = adata.var_names.str.startswith('MT-')
+
+# Identify ribosomal genes
+adata.var['ribo'] = adata.var_names.str.startswith(('RPS', 'RPL'))
+
+# Calculate QC metrics
+sc.pp.calculate_qc_metrics(
+    adata,
+    qc_vars=['mt', 'ribo'],
+    percent_top=None,
+    log1p=False,
+    inplace=True
+)
+```
+
+## Visualizing QC Metrics
+
+### Violin Plots
+
+```python
+sc.pl.violin(adata, ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'],
+             jitter=0.4, multi_panel=True)
+```
+
+### Scatter Plots
+
+```python
+sc.pl.scatter(adata, x='total_counts', y='pct_counts_mt')
+sc.pl.scatter(adata, x='total_counts', y='n_genes_by_counts')
+```
+
+### Distribution Plots
+
+```python
+# Histogram
+plt.hist(adata.obs['n_genes_by_counts'], bins=100)
+plt.xlabel('Number of genes')
+plt.ylabel('Number of cells')
+plt.show()
+```
+
+## Setting Filtering Thresholds
+
+### Statistical Approach (MAD)
+
+```python
+def is_outlier(adata, metric, nmads=5):
+    """Identify outliers using median absolute deviation."""
+    M = adata.obs[metric]
+    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | \
+              (np.median(M) + nmads * median_abs_deviation(M) < M)
+    return outlier
+
+from scipy.stats import median_abs_deviation
+
+# Identify outliers
+adata.obs['outlier_genes'] = is_outlier(adata, 'n_genes_by_counts')
+adata.obs['outlier_counts'] = is_outlier(adata, 'total_counts')
+adata.obs['outlier_mt'] = is_outlier(adata, 'pct_counts_mt')
+```
+
+### Manual Thresholds
+
+```python
+# Define thresholds based on data exploration
+min_genes = 200
+max_genes = 5000
+max_mt = 5  # 5%
+min_counts = 500
+max_counts = 25000
+```
+
+## Cell Filtering
+
+### Apply Filters
+
+```python
+# Filter cells
+sc.pp.filter_cells(adata, min_genes=min_genes)
+
+# Manual filtering
+adata = adata[adata.obs['n_genes_by_counts'] < max_genes, :]
+adata = adata[adata.obs['pct_counts_mt'] < max_mt, :]
+adata = adata[adata.obs['total_counts'] > min_counts, :]
+adata = adata[adata.obs['total_counts'] < max_counts, :]
+
+print(f"Remaining cells: {adata.n_obs}")
+```
+
+### Visualize Filtering
+
+```python
+# Before and after
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+axes[0].scatter(adata_raw.obs['total_counts'],
+                adata_raw.obs['n_genes_by_counts'],
+                alpha=0.5)
+axes[0].set_title('Before filtering')
+axes[1].scatter(adata.obs['total_counts'],
+                adata.obs['n_genes_by_counts'],
+                alpha=0.5)
+axes[1].set_title('After filtering')
+```
+
+## Gene Filtering
+
+```python
+# Filter genes expressed in minimum number of cells
+sc.pp.filter_genes(adata, min_cells=3)
+
+# Remove mitochondrial genes (optional)
+adata = adata[:, ~adata.var['mt']]
+
+# Remove ribosomal genes (optional)
+adata = adata[:, ~adata.var['ribo']]
+
+print(f"Remaining genes: {adata.n_vars}")
+```
+
+## Doublet Detection
+
+### Scrublet
+
+```python
+import scrublet as scr
+
+# Run Scrublet
+scrub = scr.Scrublet(adata.X)
+doublet_scores, predicted_doublets = scrub.scrub_doublets()
+
+# Add to adata
+adata.obs['doublet_scores'] = doublet_scores
+adata.obs['predicted_doublets'] = predicted_doublets
+
+# Visualize
+scrub.plot_histogram()
+
+# Filter doublets
+adata = adata[~adata.obs['predicted_doublets'], :]
+```
+
+## Sample-Specific QC
+
+When analyzing multiple samples:
+
+```python
+# Visualize QC by sample
+sc.pl.violin(adata, ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'],
+             groupby='sample', rotation=45)
+
+# Filter per sample
+for sample in adata.obs['sample'].unique():
+    sample_cells = adata.obs['sample'] == sample
+    # Apply sample-specific thresholds
+```
+
+## Ambient RNA Correction
+
+### SoupX or CellBender
+
+```bash
+# CellBender example (run before Python analysis)
+cellbender remove-background \
+    --input raw_feature_bc_matrix.h5 \
+    --output output.h5 \
+    --expected-cells 5000 \
+    --total-droplets-included 25000
+```
+
+## Saving Filtered Data
+
+```python
+# Save filtered data
+adata.write('filtered_adata.h5ad')
+
+# Save metadata
+adata.obs.to_csv('filtered_metadata.csv')
+
+# Export filtered counts
+adata.X.tofile('filtered_counts.csv')
+```
+
+## Best Practices
+
+::: {.callout-tip}
+## Quality Control Tips
+
+- Plot QC metrics before filtering
+- Use both statistical and manual thresholds
+- Document filtering decisions
+- Save unfiltered data
+- Check for batch effects
+- Validate with known markers
+- Be conservative with filtering
+:::
+
+## Common Pitfalls
+
+- Over-filtering (removing real biology)
+- Under-filtering (keeping low-quality cells)
+- Using same thresholds for all samples
+- Ignoring sample-specific effects
+- Not checking doublets
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Load a single-cell dataset
+2. Calculate and visualize QC metrics
+3. Identify appropriate filtering thresholds
+4. Apply filtering
+5. Detect and remove doublets
+6. Save cleaned data
+:::
+
+## Key Takeaways
+
+- QC is the most important step in scRNA-seq analysis
+- Multiple metrics should be considered
+- Thresholds should be data-driven
+- Doublet detection is essential
+- Document all filtering decisions
+
+## Additional Resources
+
+- [Scanpy QC Tutorial](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html)
+- [Orchestrating Single-Cell Analysis](https://bioconductor.org/books/release/OSCA/)
+- [Current Best Practices](https://www.embopress.org/doi/full/10.15252/msb.20188746)
+
+## Next Module
+
+With clean data, let's explore dimensionality reduction!
+
+[Continue to Module 8: Dimensionality Reduction →](08-dimensionality-reduction.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

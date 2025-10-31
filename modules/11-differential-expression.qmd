@@ -1,0 +1,404 @@
+---
+title: "Module 11: Differential Expression Analysis"
+subtitle: "Identifying Genes that Define Cell Types and States"
+---
+
+## Overview
+
+Differential expression analysis identifies genes with significant expression differences between cell populations or conditions.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand DE analysis in single-cell context
+- Apply statistical tests for DE
+- Handle confounding factors
+- Interpret and visualize DE results
+- Perform functional enrichment analysis
+:::
+
+## Types of DE Comparisons
+
+- **Between cell types**: Marker genes
+- **Between conditions**: Disease vs control
+- **Between time points**: Temporal dynamics
+- **Within cell type**: Subpopulation differences
+
+## Differential Expression Methods
+
+### Wilcoxon Rank-Sum Test
+
+```python
+import scanpy as sc
+
+# Find markers for all clusters
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='cell_type',
+    method='wilcoxon',
+    key_added='wilcoxon'
+)
+
+# Visualize
+sc.pl.rank_genes_groups(adata, n_genes=20, key='wilcoxon')
+```
+
+### t-test
+
+```python
+# t-test (faster, assumes normality)
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='cell_type',
+    method='t-test',
+    key_added='ttest'
+)
+```
+
+### Logistic Regression
+
+```python
+# Logistic regression
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='cell_type',
+    method='logreg',
+    key_added='logreg'
+)
+```
+
+## One vs Rest Comparisons
+
+```python
+# Each cluster vs all others
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='leiden',
+    method='wilcoxon',
+    key_added='rank_genes_groups'
+)
+
+# View results
+result = adata.uns['rank_genes_groups']
+groups = result['names'].dtype.names
+
+# Extract for specific cluster
+cluster_0_genes = sc.get.rank_genes_groups_df(adata, group='0')
+print(cluster_0_genes.head(20))
+```
+
+## Pairwise Comparisons
+
+```python
+# Compare specific groups
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='cell_type',
+    groups=['Neurons'],
+    reference='Astrocytes',
+    method='wilcoxon',
+    key_added='neurons_vs_astrocytes'
+)
+```
+
+## Filtering DE Results
+
+```python
+# Get results DataFrame
+de_results = sc.get.rank_genes_groups_df(adata, group='Neurons')
+
+# Filter by significance and fold change
+significant = de_results[
+    (de_results['pvals_adj'] < 0.05) &
+    (de_results['logfoldchanges'].abs() > 1)
+]
+
+# Top upregulated genes
+top_up = significant[significant['logfoldchanges'] > 0].head(20)
+
+# Top downregulated genes
+top_down = significant[significant['logfoldchanges'] < 0].head(20)
+```
+
+## Visualizing DE Results
+
+### Volcano Plot
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Create volcano plot
+de_df = sc.get.rank_genes_groups_df(adata, group='Neurons')
+
+plt.figure(figsize=(10, 6))
+plt.scatter(
+    de_df['logfoldchanges'],
+    -np.log10(de_df['pvals_adj']),
+    alpha=0.5
+)
+
+# Highlight significant genes
+sig = de_df[de_df['pvals_adj'] < 0.05]
+plt.scatter(
+    sig['logfoldchanges'],
+    -np.log10(sig['pvals_adj']),
+    c='red',
+    alpha=0.7
+)
+
+plt.xlabel('Log2 Fold Change')
+plt.ylabel('-Log10 Adjusted P-value')
+plt.title('Volcano Plot: Neurons vs Rest')
+plt.axhline(-np.log10(0.05), color='gray', linestyle='--')
+plt.axvline(1, color='gray', linestyle='--')
+plt.axvline(-1, color='gray', linestyle='--')
+plt.show()
+```
+
+### MA Plot
+
+```python
+# Mean-difference plot
+plt.figure(figsize=(10, 6))
+plt.scatter(
+    de_df['mean_expression'],
+    de_df['logfoldchanges'],
+    alpha=0.5
+)
+plt.xlabel('Mean Expression')
+plt.ylabel('Log2 Fold Change')
+plt.title('MA Plot')
+plt.axhline(0, color='gray', linestyle='--')
+plt.show()
+```
+
+### Heatmap
+
+```python
+# Heatmap of top DE genes
+top_genes = de_df.nsmallest(50, 'pvals_adj')['names'].values
+
+sc.pl.heatmap(
+    adata,
+    top_genes,
+    groupby='cell_type',
+    cmap='RdBu_r',
+    dendrogram=True,
+    standard_scale='var'
+)
+```
+
+### Dot Plot
+
+```python
+# Dot plot of marker genes
+marker_genes = de_df.nsmallest(10, 'pvals_adj')['names'].values
+
+sc.pl.dotplot(
+    adata,
+    marker_genes,
+    groupby='cell_type',
+    dendrogram=True
+)
+```
+
+### Violin Plot
+
+```python
+# Violin plot of top markers
+sc.pl.violin(
+    adata,
+    marker_genes[:5],
+    groupby='cell_type',
+    rotation=45
+)
+```
+
+## Condition-Specific DE
+
+```python
+# Compare disease vs control within cell type
+neurons = adata[adata.obs['cell_type'] == 'Neurons'].copy()
+
+sc.tl.rank_genes_groups(
+    neurons,
+    groupby='condition',
+    groups=['disease'],
+    reference='control',
+    method='wilcoxon',
+    key_added='disease_vs_control'
+)
+
+# Extract results
+de_disease = sc.get.rank_genes_groups_df(neurons, group='disease')
+```
+
+## Pseudobulk DE Analysis
+
+```python
+import pandas as pd
+
+# Aggregate counts by sample
+def pseudobulk(adata, groupby, sample_key):
+    """Create pseudobulk samples."""
+    pseudobulk_data = {}
+
+    for group in adata.obs[groupby].unique():
+        for sample in adata.obs[sample_key].unique():
+            mask = (adata.obs[groupby] == group) & (adata.obs[sample_key] == sample)
+            if mask.sum() > 10:  # Minimum cells
+                counts = adata[mask].X.sum(axis=0)
+                pseudobulk_data[f"{group}_{sample}"] = counts.A1
+
+    return pd.DataFrame(pseudobulk_data, index=adata.var_names)
+
+# Create pseudobulk
+pb_counts = pseudobulk(adata, groupby='cell_type', sample_key='sample')
+
+# Analyze with edgeR or DESeq2 (in R)
+```
+
+## Using DESeq2 (via rpy2)
+
+```python
+# Import DESeq2 through rpy2
+import rpy2.robjects as ro
+from rpy2.robjects import pandas2ri
+pandas2ri.activate()
+
+# Run DESeq2
+ro.r('''
+library(DESeq2)
+
+run_deseq2 <- function(counts, coldata) {
+    dds <- DESeqDataSetFromMatrix(
+        countData = counts,
+        colData = coldata,
+        design = ~ condition
+    )
+    dds <- DESeq(dds)
+    results(dds)
+}
+''')
+```
+
+## Handling Covariates
+
+```python
+# Control for batch effects
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='cell_type',
+    method='logreg',
+    use_raw=False
+)
+
+# Use regression to account for confounders
+# (batch, nCount, nFeature, etc.)
+```
+
+## Gene Set Enrichment
+
+### Pathway Enrichment
+
+```python
+import gseapy as gp
+
+# Get gene list
+gene_list = de_results.nsmallest(100, 'pvals_adj')['names'].tolist()
+
+# Run enrichment
+enr = gp.enrichr(
+    gene_list=gene_list,
+    gene_sets=['GO_Biological_Process_2021',
+               'KEGG_2021_Human',
+               'WikiPathways_2021_Human'],
+    organism='Human',
+    outdir='enrichment_results'
+)
+
+# View results
+print(enr.results.head(10))
+
+# Plot
+gp.barplot(enr.results, title='GO Enrichment')
+```
+
+### Gene Ontology
+
+```python
+from gprofiler import GProfiler
+
+gp = GProfiler(return_dataframe=True)
+
+result = gp.profile(
+    organism='hsapiens',
+    query=gene_list,
+    sources=['GO:BP', 'KEGG', 'REAC']
+)
+
+print(result.head())
+```
+
+## Best Practices
+
+::: {.callout-tip}
+## DE Analysis Tips
+
+- Use appropriate statistical tests
+- Apply multiple testing correction
+- Set meaningful fold-change thresholds
+- Include biological replicates
+- Consider pseudobulk for condition comparisons
+- Validate key genes with qPCR/IF
+- Perform functional enrichment
+- Report both p-values and effect sizes
+:::
+
+## Common Pitfalls
+
+- Not accounting for batch effects
+- Comparing conditions without replicates
+- Over-interpreting small fold changes
+- Ignoring multiple testing correction
+- Using single-cell for group comparisons (use pseudobulk)
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Identify marker genes for each cell type
+2. Compare two specific cell populations
+3. Create volcano and MA plots
+4. Filter for significant genes
+5. Visualize top markers with heatmap
+6. Perform pathway enrichment
+7. Interpret biological meaning
+:::
+
+## Key Takeaways
+
+- Multiple statistical methods available
+- Wilcoxon is robust and widely used
+- Account for multiple testing
+- Use pseudobulk for condition comparisons
+- Visualize results comprehensively
+- Functional enrichment adds biological context
+
+## Additional Resources
+
+- [Differential Expression Best Practices](https://www.nature.com/articles/s41467-021-25960-2)
+- [Pseudobulk Methods](https://www.nature.com/articles/s41467-021-21038-1)
+- [Scanpy DE Tutorial](https://scanpy-tutorials.readthedocs.io/)
+
+## Next Module
+
+Learn to annotate cell types automatically!
+
+[Continue to Module 12: Cell Type Prediction →](12-celltype-prediction.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

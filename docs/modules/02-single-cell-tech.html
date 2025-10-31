@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Module 2: Introduction to Single-Cell Technology – BRAIN</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-891dddac7332cc845cbf98a8f3bd28a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../assets/logo.svg" alt="BRAIN Course Logo" class="navbar-logo light-content">
+    <img src="../assets/logo.svg" alt="BRAIN Course Logo" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-modules" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Modules</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-modules">    
+        <li>
+    <a class="dropdown-item" href="../modules/01-intro-neurogenomics.html">
+ <span class="dropdown-text">Introduction to Neurogenomics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/02-single-cell-tech.html">
+ <span class="dropdown-text">Introduction to Single-Cell Technology</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/03-linux-fundamentals.html">
+ <span class="dropdown-text">Linux Command Line Fundamentals</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/04-cellranger-pipeline.html">
+ <span class="dropdown-text">CellRanger Pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/05-python-part1.html">
+ <span class="dropdown-text">Fundamentals of Python: Part 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/06-python-part2.html">
+ <span class="dropdown-text">Fundamentals of Python: Part 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/07-quality-control.html">
+ <span class="dropdown-text">Quality Control</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/08-dimensionality-reduction.html">
+ <span class="dropdown-text">Dimensionality Reduction</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/09-data-integration.html">
+ <span class="dropdown-text">Data Integration</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/10-clustering.html">
+ <span class="dropdown-text">Clustering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/11-differential-expression.html">
+ <span class="dropdown-text">Differential Expression</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/12-celltype-prediction.html">
+ <span class="dropdown-text">Cell Type Prediction</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/13-trajectory-inference.html">
+ <span class="dropdown-text">Trajectory Inference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/14-spatial-transcriptomics.html">
+ <span class="dropdown-text">Spatial Transcriptomics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/15-deep-learning-part1.html">
+ <span class="dropdown-text">Deep Learning: Part 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../modules/16-deep-learning-part2.html">
+ <span class="dropdown-text">Deep Learning: Part 2</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername/BRAIN"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#why-single-cell" id="toc-why-single-cell" class="nav-link" data-scroll-target="#why-single-cell">Why Single-Cell?</a>
+  <ul class="collapse">
+  <li><a href="#limitations-of-bulk-rna-seq" id="toc-limitations-of-bulk-rna-seq" class="nav-link" data-scroll-target="#limitations-of-bulk-rna-seq">Limitations of Bulk RNA-seq</a></li>
+  <li><a href="#single-cell-revolution" id="toc-single-cell-revolution" class="nav-link" data-scroll-target="#single-cell-revolution">Single-Cell Revolution</a></li>
+  </ul></li>
+  <li><a href="#single-cell-rna-seq-workflow" id="toc-single-cell-rna-seq-workflow" class="nav-link" data-scroll-target="#single-cell-rna-seq-workflow">Single-Cell RNA-seq Workflow</a>
+  <ul class="collapse">
+  <li><a href="#sample-preparation" id="toc-sample-preparation" class="nav-link" data-scroll-target="#sample-preparation">1. Sample Preparation</a></li>
+  <li><a href="#cell-capture-barcoding" id="toc-cell-capture-barcoding" class="nav-link" data-scroll-target="#cell-capture-barcoding">2. Cell Capture &amp; Barcoding</a></li>
+  <li><a href="#library-preparation" id="toc-library-preparation" class="nav-link" data-scroll-target="#library-preparation">3. Library Preparation</a></li>
+  <li><a href="#sequencing" id="toc-sequencing" class="nav-link" data-scroll-target="#sequencing">4. Sequencing</a></li>
+  <li><a href="#computational-analysis" id="toc-computational-analysis" class="nav-link" data-scroll-target="#computational-analysis">5. Computational Analysis</a></li>
+  </ul></li>
+  <li><a href="#x-genomics-technology" id="toc-x-genomics-technology" class="nav-link" data-scroll-target="#x-genomics-technology">10x Genomics Technology</a>
+  <ul class="collapse">
+  <li><a href="#chromium-platform" id="toc-chromium-platform" class="nav-link" data-scroll-target="#chromium-platform">Chromium Platform</a></li>
+  <li><a href="#how-it-works" id="toc-how-it-works" class="nav-link" data-scroll-target="#how-it-works">How It Works</a></li>
+  </ul></li>
+  <li><a href="#applications-in-neuroscience" id="toc-applications-in-neuroscience" class="nav-link" data-scroll-target="#applications-in-neuroscience">Applications in Neuroscience</a>
+  <ul class="collapse">
+  <li><a href="#brain-cell-atlas-projects" id="toc-brain-cell-atlas-projects" class="nav-link" data-scroll-target="#brain-cell-atlas-projects">Brain Cell Atlas Projects</a></li>
+  <li><a href="#disease-research" id="toc-disease-research" class="nav-link" data-scroll-target="#disease-research">Disease Research</a></li>
+  <li><a href="#development-and-aging" id="toc-development-and-aging" class="nav-link" data-scroll-target="#development-and-aging">Development and Aging</a></li>
+  </ul></li>
+  <li><a href="#beyond-standard-scrna-seq" id="toc-beyond-standard-scrna-seq" class="nav-link" data-scroll-target="#beyond-standard-scrna-seq">Beyond Standard scRNA-seq</a>
+  <ul class="collapse">
+  <li><a href="#single-nucleus-rna-seq-snrna-seq" id="toc-single-nucleus-rna-seq-snrna-seq" class="nav-link" data-scroll-target="#single-nucleus-rna-seq-snrna-seq">Single-Nucleus RNA-seq (snRNA-seq)</a></li>
+  <li><a href="#spatial-transcriptomics" id="toc-spatial-transcriptomics" class="nav-link" data-scroll-target="#spatial-transcriptomics">Spatial Transcriptomics</a></li>
+  <li><a href="#multimodal-technologies" id="toc-multimodal-technologies" class="nav-link" data-scroll-target="#multimodal-technologies">Multimodal Technologies</a></li>
+  </ul></li>
+  <li><a href="#experimental-design-considerations" id="toc-experimental-design-considerations" class="nav-link" data-scroll-target="#experimental-design-considerations">Experimental Design Considerations</a>
+  <ul class="collapse">
+  <li><a href="#sample-size" id="toc-sample-size" class="nav-link" data-scroll-target="#sample-size">Sample Size</a></li>
+  <li><a href="#technical-considerations" id="toc-technical-considerations" class="nav-link" data-scroll-target="#technical-considerations">Technical Considerations</a></li>
+  <li><a href="#cost-considerations" id="toc-cost-considerations" class="nav-link" data-scroll-target="#cost-considerations">Cost Considerations</a></li>
+  </ul></li>
+  <li><a href="#quality-control-metrics" id="toc-quality-control-metrics" class="nav-link" data-scroll-target="#quality-control-metrics">Quality Control Metrics</a>
+  <ul class="collapse">
+  <li><a href="#cell-level-qc" id="toc-cell-level-qc" class="nav-link" data-scroll-target="#cell-level-qc">Cell-Level QC</a></li>
+  <li><a href="#gene-level-qc" id="toc-gene-level-qc" class="nav-link" data-scroll-target="#gene-level-qc">Gene-Level QC</a></li>
+  </ul></li>
+  <li><a href="#challenges-and-limitations" id="toc-challenges-and-limitations" class="nav-link" data-scroll-target="#challenges-and-limitations">Challenges and Limitations</a></li>
+  <li><a href="#best-practices" id="toc-best-practices" class="nav-link" data-scroll-target="#best-practices">Best Practices</a></li>
+  <li><a href="#practical-exercise" id="toc-practical-exercise" class="nav-link" data-scroll-target="#practical-exercise">Practical Exercise</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  <li><a href="#additional-resources" id="toc-additional-resources" class="nav-link" data-scroll-target="#additional-resources">Additional Resources</a>
+  <ul class="collapse">
+  <li><a href="#recommended-readings" id="toc-recommended-readings" class="nav-link" data-scroll-target="#recommended-readings">Recommended Readings</a></li>
+  <li><a href="#tutorials" id="toc-tutorials" class="nav-link" data-scroll-target="#tutorials">Tutorials</a></li>
+  </ul></li>
+  <li><a href="#next-module" id="toc-next-module" class="nav-link" data-scroll-target="#next-module">Next Module</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/yourusername/BRAIN/edit/main/modules/02-single-cell-tech.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/yourusername/BRAIN/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Module 2: Introduction to Single-Cell Technology</h1>
+<p class="subtitle lead">Exploring Cellular Heterogeneity at Unprecedented Resolution</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Single-cell RNA sequencing (scRNA-seq) has revolutionized our ability to study gene expression at the individual cell level. This module introduces the principles, technologies, and applications of single-cell approaches in neuroscience.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Learning Objectives
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Understand the principles of single-cell RNA sequencing</li>
+<li>Learn about different scRNA-seq platforms and technologies</li>
+<li>Recognize applications of single-cell approaches in neuroscience</li>
+<li>Appreciate the advantages and limitations of single-cell technologies</li>
+<li>Identify key experimental design considerations</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="why-single-cell" class="level2">
+<h2 class="anchored" data-anchor-id="why-single-cell">Why Single-Cell?</h2>
+<section id="limitations-of-bulk-rna-seq" class="level3">
+<h3 class="anchored" data-anchor-id="limitations-of-bulk-rna-seq">Limitations of Bulk RNA-seq</h3>
+<p>Traditional bulk RNA sequencing analyzes the average gene expression across millions of cells, masking:</p>
+<ul>
+<li>Cellular heterogeneity</li>
+<li>Rare cell populations</li>
+<li>Cell-state transitions</li>
+<li>Cell-type-specific responses</li>
+</ul>
+</section>
+<section id="single-cell-revolution" class="level3">
+<h3 class="anchored" data-anchor-id="single-cell-revolution">Single-Cell Revolution</h3>
+<div class="card">
+<p><strong>Single-cell technologies enable</strong>:</p>
+<ul>
+<li>Cell-type identification and characterization</li>
+<li>Discovery of rare cell populations</li>
+<li>Trajectory and lineage inference</li>
+<li>Cell-state dynamics</li>
+<li>Spatial organization (with spatial methods)</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="single-cell-rna-seq-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="single-cell-rna-seq-workflow">Single-Cell RNA-seq Workflow</h2>
+<section id="sample-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="sample-preparation">1. Sample Preparation</h3>
+<ul>
+<li>Tissue dissociation</li>
+<li>Cell isolation and purification</li>
+<li>Quality control of cell viability</li>
+<li>Cell counting and concentration</li>
+</ul>
+</section>
+<section id="cell-capture-barcoding" class="level3">
+<h3 class="anchored" data-anchor-id="cell-capture-barcoding">2. Cell Capture &amp; Barcoding</h3>
+<div class="module-card">
+<p><strong>Common platforms</strong>:</p>
+<ul>
+<li><strong>10x Genomics Chromium</strong>: Droplet-based, high-throughput</li>
+<li><strong>Smart-seq2/3</strong>: Full-length transcripts, plate-based</li>
+<li><strong>Drop-seq</strong>: Open-source droplet platform</li>
+<li><strong>inDrop</strong>: Droplet-based with in-house barcodes</li>
+<li><strong>CITE-seq</strong>: Simultaneous RNA and protein</li>
+</ul>
+</div>
+</section>
+<section id="library-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="library-preparation">3. Library Preparation</h3>
+<ul>
+<li>Reverse transcription</li>
+<li>cDNA amplification</li>
+<li>Library construction</li>
+<li>Quality control</li>
+</ul>
+</section>
+<section id="sequencing" class="level3">
+<h3 class="anchored" data-anchor-id="sequencing">4. Sequencing</h3>
+<ul>
+<li>Next-generation sequencing (Illumina)</li>
+<li>Sequencing depth considerations</li>
+<li>Cost vs.&nbsp;coverage trade-offs</li>
+</ul>
+</section>
+<section id="computational-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="computational-analysis">5. Computational Analysis</h3>
+<ul>
+<li>Read alignment and quantification</li>
+<li>Quality control and filtering</li>
+<li>Normalization and batch correction</li>
+<li>Dimensionality reduction</li>
+<li>Clustering and cell type annotation</li>
+</ul>
+</section>
+</section>
+<section id="x-genomics-technology" class="level2">
+<h2 class="anchored" data-anchor-id="x-genomics-technology">10x Genomics Technology</h2>
+<section id="chromium-platform" class="level3">
+<h3 class="anchored" data-anchor-id="chromium-platform">Chromium Platform</h3>
+<p>The most widely used commercial single-cell platform:</p>
+<div class="card">
+<p><strong>Key Features</strong>:</p>
+<ul>
+<li>Droplet-based cell capture</li>
+<li>Gel bead-based barcoding</li>
+<li>3’ or 5’ gene expression profiling</li>
+<li>High throughput (500-10,000 cells per sample)</li>
+<li>Multiome capabilities (RNA + ATAC)</li>
+</ul>
+</div>
+</section>
+<section id="how-it-works" class="level3">
+<h3 class="anchored" data-anchor-id="how-it-works">How It Works</h3>
+<ol type="1">
+<li><strong>Cell suspension</strong> is loaded into the Chromium controller</li>
+<li><strong>Gel beads</strong> containing barcoded oligonucleotides</li>
+<li><strong>Droplets</strong> encapsulate single cells with gel beads</li>
+<li><strong>Cell lysis</strong> and reverse transcription within droplets</li>
+<li><strong>Unique barcodes</strong> tag each cell’s transcripts</li>
+<li><strong>Pool and sequence</strong> all cells together</li>
+</ol>
+</section>
+</section>
+<section id="applications-in-neuroscience" class="level2">
+<h2 class="anchored" data-anchor-id="applications-in-neuroscience">Applications in Neuroscience</h2>
+<section id="brain-cell-atlas-projects" class="level3">
+<h3 class="anchored" data-anchor-id="brain-cell-atlas-projects">Brain Cell Atlas Projects</h3>
+<ul>
+<li>Human Cell Atlas</li>
+<li>BRAIN Initiative Cell Census Network (BICCN)</li>
+<li>Allen Brain Cell Atlas</li>
+<li>Species-comparative brain atlases</li>
+</ul>
+</section>
+<section id="disease-research" class="level3">
+<h3 class="anchored" data-anchor-id="disease-research">Disease Research</h3>
+<div class="module-card">
+<p><strong>Applications</strong>:</p>
+<ul>
+<li>Alzheimer’s disease pathology</li>
+<li>Neuroinflammation in disease</li>
+<li>Cancer (glioblastoma) heterogeneity</li>
+<li>Neurodevelopmental disorders</li>
+<li>Psychiatric disorder mechanisms</li>
+</ul>
+</div>
+</section>
+<section id="development-and-aging" class="level3">
+<h3 class="anchored" data-anchor-id="development-and-aging">Development and Aging</h3>
+<ul>
+<li>Brain development trajectories</li>
+<li>Neurogenesis and gliogenesis</li>
+<li>Aging-associated changes</li>
+<li>Cellular senescence</li>
+</ul>
+</section>
+</section>
+<section id="beyond-standard-scrna-seq" class="level2">
+<h2 class="anchored" data-anchor-id="beyond-standard-scrna-seq">Beyond Standard scRNA-seq</h2>
+<section id="single-nucleus-rna-seq-snrna-seq" class="level3">
+<h3 class="anchored" data-anchor-id="single-nucleus-rna-seq-snrna-seq">Single-Nucleus RNA-seq (snRNA-seq)</h3>
+<div class="card">
+<p><strong>Advantages for brain tissue</strong>:</p>
+<ul>
+<li>Works with frozen tissue</li>
+<li>Captures difficult-to-dissociate neurons</li>
+<li>Preserves cell-type proportions better</li>
+<li>Reduces dissociation-induced artifacts</li>
+</ul>
+</div>
+</section>
+<section id="spatial-transcriptomics" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-transcriptomics">Spatial Transcriptomics</h3>
+<ul>
+<li><strong>Visium (10x Genomics)</strong>: Spatial gene expression</li>
+<li><strong>MERFISH</strong>: Multiplexed error-robust FISH</li>
+<li><strong>seqFISH</strong>: Sequential fluorescence in situ hybridization</li>
+<li><strong>Slide-seq</strong>: High-resolution spatial sequencing</li>
+</ul>
+</section>
+<section id="multimodal-technologies" class="level3">
+<h3 class="anchored" data-anchor-id="multimodal-technologies">Multimodal Technologies</h3>
+<ul>
+<li><strong>CITE-seq</strong>: RNA + surface proteins</li>
+<li><strong>ATAC + RNA</strong>: Chromatin accessibility and gene expression</li>
+<li><strong>SHARE-seq</strong>: Simultaneous RNA and ATAC</li>
+<li><strong>Patch-seq</strong>: Electrophysiology + transcriptomics</li>
+</ul>
+</section>
+</section>
+<section id="experimental-design-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="experimental-design-considerations">Experimental Design Considerations</h2>
+<section id="sample-size" class="level3">
+<h3 class="anchored" data-anchor-id="sample-size">Sample Size</h3>
+<ul>
+<li>Number of biological replicates</li>
+<li>Cells per sample (technical depth)</li>
+<li>Statistical power considerations</li>
+</ul>
+</section>
+<section id="technical-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="technical-considerations">Technical Considerations</h3>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Key Factors
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Fresh vs.&nbsp;frozen tissue</li>
+<li>Cell viability requirements</li>
+<li>Capture efficiency (typically 50-80%)</li>
+<li>Sequencing depth (reads per cell)</li>
+<li>Batch effects and confounders</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="cost-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="cost-considerations">Cost Considerations</h3>
+<ul>
+<li>Per-cell costs</li>
+<li>Sequencing costs</li>
+<li>Computational infrastructure</li>
+<li>Trade-off: more cells vs.&nbsp;deeper sequencing</li>
+</ul>
+</section>
+</section>
+<section id="quality-control-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="quality-control-metrics">Quality Control Metrics</h2>
+<section id="cell-level-qc" class="level3">
+<h3 class="anchored" data-anchor-id="cell-level-qc">Cell-Level QC</h3>
+<ul>
+<li>Number of detected genes (complexity)</li>
+<li>Total UMI counts (sequencing depth)</li>
+<li>Mitochondrial content (cell stress/death)</li>
+<li>Doublet detection</li>
+</ul>
+</section>
+<section id="gene-level-qc" class="level3">
+<h3 class="anchored" data-anchor-id="gene-level-qc">Gene-Level QC</h3>
+<ul>
+<li>Genes detected across cells</li>
+<li>Expression distribution</li>
+<li>Technical noise estimation</li>
+</ul>
+</section>
+</section>
+<section id="challenges-and-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="challenges-and-limitations">Challenges and Limitations</h2>
+<ol type="1">
+<li><strong>Technical noise</strong>: Dropout events, amplification bias</li>
+<li><strong>Cost</strong>: Still expensive for large studies</li>
+<li><strong>Computational demands</strong>: Large datasets, complex analyses</li>
+<li><strong>Batch effects</strong>: Technical variation across experiments</li>
+<li><strong>Interpretation</strong>: Biological meaning of clusters</li>
+</ol>
+</section>
+<section id="best-practices" class="level2">
+<h2 class="anchored" data-anchor-id="best-practices">Best Practices</h2>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Recommendations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Include appropriate biological replicates</li>
+<li>Use standardized protocols</li>
+<li>Record detailed metadata</li>
+<li>Implement rigorous QC at each step</li>
+<li>Use established computational workflows</li>
+<li>Validate findings with orthogonal methods</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="practical-exercise" class="level2">
+<h2 class="anchored" data-anchor-id="practical-exercise">Practical Exercise</h2>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Hands-On Activity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Explore a published single-cell brain dataset:</p>
+<ol type="1">
+<li>Visit the Allen Brain Map Single Cell Portal</li>
+<li>Browse available brain datasets</li>
+<li>Examine cell type diversity in a region of interest</li>
+<li>Compare gene expression across cell types</li>
+<li>Consider: What biological questions could this data answer?</li>
+</ol>
+</div>
+</div>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ul>
+<li>Single-cell RNA-seq reveals cellular heterogeneity invisible to bulk methods</li>
+<li>Multiple platforms exist with different trade-offs</li>
+<li>10x Genomics is the most widely used commercial platform</li>
+<li>Brain tissue presents unique challenges (cell size, fragility)</li>
+<li>Careful experimental design is crucial for success</li>
+<li>Technology continues to evolve with multimodal approaches</li>
+</ul>
+</section>
+<section id="additional-resources" class="level2">
+<h2 class="anchored" data-anchor-id="additional-resources">Additional Resources</h2>
+<section id="recommended-readings" class="level3">
+<h3 class="anchored" data-anchor-id="recommended-readings">Recommended Readings</h3>
+<ol type="1">
+<li><strong>“Single-cell RNA-seq: a primer”</strong> - Nature Methods</li>
+<li><strong>“Best practices for single-cell analysis”</strong> - Molecular Systems Biology</li>
+<li><strong>“Single-cell genomics in neuroscience”</strong> - Nature Reviews Neuroscience</li>
+</ol>
+</section>
+<section id="tutorials" class="level3">
+<h3 class="anchored" data-anchor-id="tutorials">Tutorials</h3>
+<ul>
+<li>10x Genomics Support Documentation</li>
+<li>Seurat tutorials and vignettes</li>
+<li>Scanpy tutorials for Python users</li>
+</ul>
+</section>
+</section>
+<section id="next-module" class="level2">
+<h2 class="anchored" data-anchor-id="next-module">Next Module</h2>
+<p>Now that you understand single-cell technology, let’s build the computational skills needed to analyze this data!</p>
+<p><a href="../modules/03-linux-fundamentals.html" class="btn">Continue to Module 3: Linux Command Line Fundamentals →</a></p>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Questions?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Reach out via the course discussion forum or during office hours listed on the <a href="../schedule.html">Schedule</a> page.</p>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/yourusername\.github\.io\/BRAIN");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>© 2025 BRAIN Course. All rights reserved.</p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/yourusername/BRAIN/edit/main/modules/02-single-cell-tech.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/yourusername/BRAIN/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

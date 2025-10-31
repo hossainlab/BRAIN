@@ -1,0 +1,101 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "BRAIN"
+  description: "Bioinformatics Research with AI in Neurosciences"
+  favicon: assets/favicon.svg
+  site-url: https://yourusername.github.io/BRAIN
+  repo-url: https://github.com/yourusername/BRAIN
+  repo-actions: [edit, issue]
+
+  page-navigation: true
+  search:
+    location: navbar
+    type: overlay
+
+  navbar:
+    background: primary
+    logo: assets/logo.svg
+    logo-alt: "BRAIN Course Logo"
+    title: false
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Modules"
+        menu:
+          - text: "Introduction to Neurogenomics"
+            href: modules/01-intro-neurogenomics.qmd
+          - text: "Introduction to Single-Cell Technology"
+            href: modules/02-single-cell-tech.qmd
+          - text: "Linux Command Line Fundamentals"
+            href: modules/03-linux-fundamentals.qmd
+          - text: "CellRanger Pipeline"
+            href: modules/04-cellranger-pipeline.qmd
+          - text: "Fundamentals of Python: Part 1"
+            href: modules/05-python-part1.qmd
+          - text: "Fundamentals of Python: Part 2"
+            href: modules/06-python-part2.qmd
+          - text: "Quality Control"
+            href: modules/07-quality-control.qmd
+          - text: "Dimensionality Reduction"
+            href: modules/08-dimensionality-reduction.qmd
+          - text: "Data Integration"
+            href: modules/09-data-integration.qmd
+          - text: "Clustering"
+            href: modules/10-clustering.qmd
+          - text: "Differential Expression"
+            href: modules/11-differential-expression.qmd
+          - text: "Cell Type Prediction"
+            href: modules/12-celltype-prediction.qmd
+          - text: "Trajectory Inference"
+            href: modules/13-trajectory-inference.qmd
+          - text: "Spatial Transcriptomics"
+            href: modules/14-spatial-transcriptomics.qmd
+          - text: "Deep Learning: Part 1"
+            href: modules/15-deep-learning-part1.qmd
+          - text: "Deep Learning: Part 2"
+            href: modules/16-deep-learning-part2.qmd
+      - text: "Schedule"
+        href: schedule.qmd
+      - text: "About"
+        href: about.qmd
+    right:
+      - icon: github
+        href: https://github.com/yourusername/BRAIN
+        aria-label: GitHub
+
+  page-footer:
+    center: |
+      © 2025 BRAIN Course. All rights reserved.
+    background: dark
+
+format:
+  html:
+    theme:
+      light: [cosmo, styles.css]
+    css: styles.css
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-copy: true
+    code-overflow: wrap
+    code-tools: false
+    anchor-sections: true
+    smooth-scroll: true
+    link-external-newwindow: true
+    link-external-icon: true
+    citations-hover: true
+    footnotes-hover: true
+    grid:
+      body-width: 1200px
+      sidebar-width: 300px
+      margin-width: 300px
+    html-math-method: katex
+
+execute:
+  freeze: auto
+  echo: true
+  warning: false
+  message: false

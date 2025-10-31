@@ -1,0 +1,290 @@
+---
+title: "Module 3: Linux Command Line Fundamentals"
+subtitle: "Essential Unix Skills for Bioinformatics"
+---
+
+## Overview
+
+The command line is an essential tool for bioinformatics analysis. This module covers fundamental Linux/Unix commands and concepts needed for working with genomics data.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Navigate the Linux file system
+- Execute basic file operations
+- Use text processing tools
+- Understand permissions and processes
+- Write simple shell scripts
+- Work with remote servers
+:::
+
+## Why Learn the Command Line?
+
+- **Efficiency**: Automate repetitive tasks
+- **Power**: Handle large datasets
+- **Reproducibility**: Script-based workflows
+- **Required**: Most bioinformatics tools are command-line based
+- **Universal**: Skills transferable across platforms
+
+## Getting Started
+
+### Accessing the Terminal
+
+- **Linux**: Built-in terminal
+- **macOS**: Terminal.app or iTerm2
+- **Windows**: WSL2 (Windows Subsystem for Linux)
+
+### Basic Command Structure
+
+```bash
+command -options arguments
+```
+
+## Essential Commands
+
+### Navigation
+
+```bash
+pwd              # Print working directory
+ls               # List files
+ls -lh           # Detailed list with human-readable sizes
+cd directory     # Change directory
+cd ..            # Go up one level
+cd ~             # Go to home directory
+```
+
+### File Operations
+
+```bash
+mkdir dirname          # Create directory
+touch filename         # Create empty file
+cp source dest         # Copy files
+mv source dest         # Move/rename files
+rm filename            # Remove file
+rm -r directory        # Remove directory recursively
+```
+
+### Viewing Files
+
+```bash
+cat file.txt           # Display entire file
+less file.txt          # View file page by page
+head -n 10 file.txt    # First 10 lines
+tail -n 10 file.txt    # Last 10 lines
+wc -l file.txt         # Count lines
+```
+
+## Text Processing
+
+### Searching and Filtering
+
+```bash
+grep "pattern" file.txt        # Search for pattern
+grep -i "pattern" file.txt     # Case-insensitive search
+grep -v "pattern" file.txt     # Invert match
+```
+
+### Sorting and Unique
+
+```bash
+sort file.txt                  # Sort lines
+sort -n file.txt               # Numeric sort
+uniq file.txt                  # Remove duplicates
+sort file.txt | uniq -c        # Count occurrences
+```
+
+### Cutting and Pasting
+
+```bash
+cut -f 1,3 file.tsv            # Extract columns 1 and 3
+cut -d ',' -f 2 file.csv       # CSV column extraction
+paste file1.txt file2.txt      # Merge files side by side
+```
+
+## Pipes and Redirection
+
+### Chaining Commands
+
+```bash
+command1 | command2            # Pipe output to next command
+ls -lh | grep ".txt"           # List only .txt files
+cat file.txt | sort | uniq     # Sort and remove duplicates
+```
+
+### Redirection
+
+```bash
+command > output.txt           # Write output to file
+command >> output.txt          # Append to file
+command 2> error.log           # Redirect errors
+command &> all.log             # Redirect both stdout and stderr
+```
+
+## Working with Compressed Files
+
+```bash
+gzip file.txt                  # Compress file
+gunzip file.txt.gz             # Decompress file
+zcat file.txt.gz               # View compressed file
+tar -czf archive.tar.gz dir/   # Create tar.gz archive
+tar -xzf archive.tar.gz        # Extract tar.gz archive
+```
+
+## Permissions and Processes
+
+### File Permissions
+
+```bash
+ls -l                          # View permissions
+chmod +x script.sh             # Make executable
+chmod 755 file                 # Set specific permissions
+chown user:group file          # Change ownership
+```
+
+### Process Management
+
+```bash
+top                            # View running processes
+ps aux                         # List all processes
+kill PID                       # Kill process by ID
+Ctrl+C                         # Interrupt current process
+Ctrl+Z                         # Suspend current process
+bg                             # Resume in background
+fg                             # Resume in foreground
+```
+
+## Shell Scripting Basics
+
+### Creating a Script
+
+```bash
+#!/bin/bash
+# My first bioinformatics script
+
+echo "Processing data..."
+mkdir -p results
+cp data/*.fastq.gz results/
+echo "Done!"
+```
+
+### Variables
+
+```bash
+NAME="sample1"
+INPUT_DIR="/path/to/data"
+echo "Processing ${NAME}"
+```
+
+### Loops
+
+```bash
+# For loop
+for file in *.txt; do
+    echo "Processing $file"
+    wc -l $file
+done
+
+# While loop
+counter=1
+while [ $counter -le 5 ]; do
+    echo "Count: $counter"
+    ((counter++))
+done
+```
+
+## Remote Server Access
+
+### SSH (Secure Shell)
+
+```bash
+ssh username@server.com        # Connect to remote server
+scp file.txt user@server:~/    # Copy file to server
+rsync -avz dir/ server:~/dir/  # Sync directories
+```
+
+## Bioinformatics-Specific Commands
+
+### Working with FASTQ Files
+
+```bash
+# Count reads
+zcat file.fastq.gz | wc -l
+# Divide by 4 for actual read count
+
+# Extract first 1000 reads
+zcat file.fastq.gz | head -n 4000 | gzip > subset.fastq.gz
+
+# Check quality scores
+zcat file.fastq.gz | head -n 100
+```
+
+### Working with GTF/GFF Files
+
+```bash
+# Extract gene entries
+grep "gene" genes.gtf > genes_only.gtf
+
+# Count features
+cut -f 3 genes.gtf | sort | uniq -c
+```
+
+## Practical Exercises
+
+::: {.callout-important}
+## Hands-On Practice
+
+1. Create a project directory structure
+2. Download a sample FASTQ file
+3. Count the number of reads
+4. Extract the first 1000 reads
+5. Calculate basic statistics
+6. Write a script to automate the process
+:::
+
+## Tips and Best Practices
+
+::: {.callout-tip}
+## Pro Tips
+
+- Use Tab for auto-completion
+- Use Up/Down arrows for command history
+- Use `Ctrl+R` for reverse search
+- Use `man command` for help
+- Use `history` to see previous commands
+- Always use absolute paths in scripts
+- Comment your code
+- Test on small datasets first
+:::
+
+## Common Pitfalls
+
+- Forgetting to quote filenames with spaces
+- Not checking if commands succeeded
+- Accidentally deleting important files
+- Not backing up data
+- Working in wrong directory
+
+## Key Takeaways
+
+- Command line is essential for bioinformatics
+- Master basic navigation and file operations
+- Learn text processing for data manipulation
+- Use pipes to chain commands efficiently
+- Write scripts for reproducible analyses
+- Practice regularly to build proficiency
+
+## Additional Resources
+
+- [The Unix Shell (Software Carpentry)](https://swcarpentry.github.io/shell-novice/)
+- [Linux Command Line Cheat Sheet](https://www.linuxtrainingacademy.com/linux-commands-cheat-sheet/)
+- [Bash scripting tutorial](https://linuxconfig.org/bash-scripting-tutorial)
+
+## Next Module
+
+Now that you have command-line skills, let's apply them to process single-cell data!
+
+[Continue to Module 4: CellRanger Pipeline →](04-cellranger-pipeline.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

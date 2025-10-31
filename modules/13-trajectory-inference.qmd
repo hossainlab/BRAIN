@@ -1,0 +1,410 @@
+---
+title: "Module 13: Trajectory Inference"
+subtitle: "Analyzing Cellular Differentiation and Dynamics"
+---
+
+## Overview
+
+Trajectory inference reconstructs continuous cellular processes like differentiation, cell cycle, and response dynamics from snapshot single-cell data.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand pseudotime concepts
+- Apply trajectory inference methods
+- Interpret trajectory results
+- Identify branch points and fate decisions
+- Analyze gene expression dynamics along trajectories
+:::
+
+## What is Pseudotime?
+
+**Pseudotime**: Computational ordering of cells along a continuous process
+
+**Applications**:
+- Neuronal differentiation
+- Cell cycle progression
+- Immune cell activation
+- Disease progression
+- Drug response dynamics
+
+## When to Use Trajectory Analysis
+
+::: {.module-card}
+**Appropriate for**:
+
+- Development and differentiation
+- Cell state transitions
+- Temporal processes
+- Continuous biological processes
+
+**Not appropriate for**:
+
+- Discrete stable cell types
+- No expected transitions
+- Technical variation dominates
+:::
+
+## Diffusion Pseudotime (DPT)
+
+### Concept
+
+Models cell-cell transitions as diffusion process
+
+### Implementation
+
+```python
+import scanpy as sc
+
+# Compute diffusion map
+sc.tl.diffmap(adata, n_comps=15)
+
+# Compute DPT
+# Set root cell (typically most undifferentiated)
+root_cell = adata[adata.obs['cell_type'] == 'Progenitor'].obs_names[0]
+adata.uns['iroot'] = np.flatnonzero(adata.obs_names == root_cell)[0]
+
+# Run DPT
+sc.tl.dpt(adata, n_dcs=10)
+
+# Visualize
+sc.pl.diffmap(adata, color='dpt_pseudotime', cmap='viridis')
+sc.pl.umap(adata, color='dpt_pseudotime', cmap='viridis')
+```
+
+## PAGA (Partition-based Graph Abstraction)
+
+### Concept
+
+Builds abstracted graph connecting cell clusters
+
+### Implementation
+
+```python
+# Compute PAGA
+sc.tl.paga(adata, groups='leiden')
+
+# Visualize PAGA graph
+sc.pl.paga(adata, color=['leiden', 'dpt_pseudotime'])
+
+# PAGA-initialized UMAP
+sc.tl.umap(adata, init_pos='paga')
+sc.pl.umap(adata, color=['leiden', 'dpt_pseudotime'])
+```
+
+## Slingshot
+
+```python
+# Via rpy2 interface
+import rpy2.robjects as ro
+
+ro.r('''
+library(slingshot)
+library(SingleCellExperiment)
+
+# Run Slingshot
+sce <- slingshot(sce,
+                 clusterLabels = 'cell_type',
+                 reducedDim = 'UMAP',
+                 start.clus = "Progenitor")
+
+# Get pseudotime
+pseudotime <- slingPseudotime(sce)
+''')
+```
+
+## Monocle 3
+
+```python
+# Via rpy2
+ro.r('''
+library(monocle3)
+
+# Create Monocle object
+cds <- new_cell_data_set(
+    expression_data = counts,
+    cell_metadata = metadata,
+    gene_metadata = genes
+)
+
+# Preprocess
+cds <- preprocess_cds(cds)
+cds <- reduce_dimension(cds)
+
+# Learn trajectory
+cds <- cluster_cells(cds)
+cds <- learn_graph(cds)
+
+# Order cells
+cds <- order_cells(cds)
+
+# Plot
+plot_cells(cds,
+           color_cells_by = "pseudotime",
+           label_cell_groups = FALSE)
+''')
+```
+
+## Palantir
+
+```python
+import palantir
+
+# Run Palantir
+pr_res = palantir.core.run_palantir(
+    adata,
+    early_cell='cell_id',  # Root cell
+    num_waypoints=500
+)
+
+# Add results to adata
+adata.obs['palantir_pseudotime'] = pr_res.pseudotime
+adata.obsm['palantir_fate_probs'] = pr_res.branch_probs
+
+# Visualize
+palantir.plot.plot_palantir_results(pr_res, adata)
+```
+
+## CellRank
+
+```python
+import cellrank as cr
+
+# Compute RNA velocity (if available)
+import scvelo as scv
+scv.tl.velocity(adata, mode='stochastic')
+scv.tl.velocity_graph(adata)
+
+# Initialize CellRank
+vk = cr.tl.kernels.VelocityKernel(adata)
+vk.compute_transition_matrix()
+
+# Compute initial and terminal states
+g = cr.tl.estimators.GPCCA(vk)
+g.compute_macrostates(n_states=5)
+g.compute_terminal_states()
+
+# Compute absorption probabilities
+g.compute_absorption_probabilities()
+
+# Plot
+g.plot_macrostates(which='terminal')
+```
+
+## Analyzing Gene Expression Dynamics
+
+### Genes Along Pseudotime
+
+```python
+# Smooth gene expression along pseudotime
+sc.pl.scatter(adata, x='dpt_pseudotime', y='BDNF', color='cell_type')
+
+# Multiple genes
+genes = ['SOX2', 'DCX', 'RBFOX3', 'SYN1']
+for gene in genes:
+    sc.pl.scatter(adata, x='dpt_pseudotime', y=gene)
+```
+
+### Heatmap of Dynamic Genes
+
+```python
+# Find genes that vary along pseudotime
+# Correlation with pseudotime
+import pandas as pd
+from scipy.stats import spearmanr
+
+pseudotime_corrs = []
+for gene in adata.var_names:
+    corr, pval = spearmanr(
+        adata.obs['dpt_pseudotime'],
+        adata[:, gene].X.toarray().flatten()
+    )
+    pseudotime_corrs.append((gene, corr, pval))
+
+# Convert to DataFrame
+corr_df = pd.DataFrame(
+    pseudotime_corrs,
+    columns=['gene', 'correlation', 'pvalue']
+)
+
+# Filter significant genes
+dynamic_genes = corr_df[
+    (corr_df['pvalue'] < 0.01) &
+    (corr_df['correlation'].abs() > 0.3)
+].sort_values('correlation')
+
+# Heatmap
+top_genes = dynamic_genes['gene'].values[:50]
+
+# Order cells by pseudotime
+adata_ordered = adata[adata.obs['dpt_pseudotime'].argsort()]
+
+sc.pl.heatmap(
+    adata_ordered,
+    top_genes,
+    groupby='cell_type',
+    swap_axes=True,
+    cmap='RdBu_r',
+    standard_scale='var'
+)
+```
+
+## Branch Point Analysis
+
+### Identifying Branches
+
+```python
+# With PAGA
+sc.tl.paga(adata, groups='leiden')
+
+# Identify branch points
+# Look for nodes with >2 connections
+paga_graph = adata.uns['paga']['connectivities']
+
+# Find branch points (clusters with multiple downstream fates)
+```
+
+### Branch-Specific Genes
+
+```python
+# Compare cells in different branches
+branch1_cells = adata[adata.obs['branch'] == 'Branch1']
+branch2_cells = adata[adata.obs['branch'] == 'Branch2']
+
+# Find branch-specific DE genes
+sc.tl.rank_genes_groups(
+    adata,
+    groupby='branch',
+    groups=['Branch1'],
+    reference='Branch2',
+    method='wilcoxon'
+)
+
+# Visualize
+sc.pl.rank_genes_groups(adata, n_genes=20)
+```
+
+## Velocity Analysis
+
+### RNA Velocity
+
+```python
+import scvelo as scv
+
+# Load spliced/unspliced counts
+adata = scv.read('data.loom', cache=True)
+
+# Preprocess
+scv.pp.filter_and_normalize(adata)
+scv.pp.moments(adata)
+
+# Compute velocity
+scv.tl.velocity(adata, mode='stochastic')
+scv.tl.velocity_graph(adata)
+
+# Visualize
+scv.pl.velocity_embedding_stream(adata, basis='umap')
+scv.pl.velocity_embedding(adata, basis='umap', arrow_length=3)
+```
+
+### Velocity Pseudotime
+
+```python
+# Infer pseudotime from velocity
+scv.tl.velocity_pseudotime(adata)
+
+# Visualize
+scv.pl.scatter(adata, color='velocity_pseudotime', cmap='gnuplot')
+```
+
+## Validation and Interpretation
+
+### Quality Checks
+
+::: {.callout-tip}
+## Validation Steps
+
+1. **Biological coherence**: Does trajectory match known biology?
+2. **Marker gene expression**: Progressive changes expected?
+3. **Multiple methods**: Do different methods agree?
+4. **Robustness**: Stable across parameters?
+5. **Orthogonal validation**: Confirm with time-series data
+:::
+
+### Statistical Tests
+
+```python
+# Test for monotonic trends
+from scipy.stats import spearmanr
+
+for gene in marker_genes:
+    corr, pval = spearmanr(
+        adata.obs['dpt_pseudotime'],
+        adata[:, gene].X.toarray()
+    )
+    print(f"{gene}: r={corr:.3f}, p={pval:.3e}")
+```
+
+## Common Pitfalls
+
+- Forcing trajectory on discrete cell types
+- Incorrect root cell selection
+- Over-interpreting branching
+- Ignoring batch effects
+- Insufficient cell numbers
+- Technical variation masking biology
+
+## Best Practices
+
+::: {.callout-important}
+## Trajectory Analysis Tips
+
+- Validate with known markers
+- Try multiple methods
+- Check parameter sensitivity
+- Use biological knowledge to set root
+- Consider experimental time points
+- Validate key findings experimentally
+- Report method details and parameters
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Load developmental or differentiation dataset
+2. Identify appropriate root cell
+3. Compute diffusion pseudotime
+4. Run PAGA to identify trajectories
+5. Find genes correlated with pseudotime
+6. Create heatmap of dynamic genes
+7. Identify branch points
+8. Validate with known developmental markers
+:::
+
+## Key Takeaways
+
+- Pseudotime orders cells along continuous processes
+- Multiple methods available, no universal best
+- Root cell selection is critical
+- Validate with biological knowledge
+- Gene expression dynamics reveal regulatory programs
+- RNA velocity adds directionality information
+
+## Additional Resources
+
+- [Trajectory Inference Benchmarking](https://www.nature.com/articles/s41587-019-0071-9)
+- [scVelo Documentation](https://scvelo.readthedocs.io/)
+- [CellRank Tutorial](https://cellrank.readthedocs.io/)
+- [Monocle 3](http://cole-trapnell-lab.github.io/monocle3/)
+
+## Next Module
+
+Explore spatial organization with spatial transcriptomics!
+
+[Continue to Module 14: Spatial Transcriptomics →](14-spatial-transcriptomics.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

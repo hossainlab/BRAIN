@@ -1,0 +1,277 @@
+---
+title: "Module 8: Dimensionality Reduction"
+subtitle: "Visualizing High-Dimensional Single-Cell Data"
+---
+
+## Overview
+
+Single-cell data is high-dimensional. Dimensionality reduction techniques enable visualization and downstream analysis.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand curse of dimensionality
+- Apply PCA for linear dimensionality reduction
+- Use t-SNE and UMAP for non-linear visualization
+- Interpret dimensionality reduction plots
+- Choose appropriate parameters
+:::
+
+## The Curse of Dimensionality
+
+Single-cell datasets have:
+- 10,000+ genes (dimensions)
+- 1,000-100,000+ cells
+- Sparse, high-dimensional space
+
+**Challenge**: Impossible to visualize directly
+
+**Solution**: Reduce to 2-3 dimensions while preserving structure
+
+## Principal Component Analysis (PCA)
+
+### What is PCA?
+
+- Linear dimensionality reduction
+- Finds directions of maximum variance
+- Creates orthogonal principal components
+- Foundation for many downstream analyses
+
+### Running PCA
+
+```python
+import scanpy as sc
+
+# Normalize and log-transform
+sc.pp.normalize_total(adata, target_sum=1e4)
+sc.pp.log1p(adata)
+
+# Identify highly variable genes
+sc.pp.highly_variable_genes(adata, n_top_genes=2000)
+
+# Scale data
+sc.pp.scale(adata, max_value=10)
+
+# Run PCA
+sc.tl.pca(adata, svd_solver='arpack')
+
+# Visualize
+sc.pl.pca(adata, color='cell_type')
+sc.pl.pca_variance_ratio(adata, log=True, n_pcs=50)
+```
+
+### Choosing Number of PCs
+
+```python
+# Elbow plot
+sc.pl.pca_variance_ratio(adata, n_pcs=50)
+
+# Typically use 30-50 PCs for downstream analysis
+```
+
+## t-SNE (t-Distributed Stochastic Neighbor Embedding)
+
+### Characteristics
+
+- Non-linear dimensionality reduction
+- Preserves local structure
+- Good for visualization
+- Stochastic (different runs produce different results)
+
+### Running t-SNE
+
+```python
+# Compute t-SNE
+sc.tl.tsne(adata, n_pcs=30, perplexity=30)
+
+# Visualize
+sc.pl.tsne(adata, color=['cell_type', 'n_genes', 'pct_counts_mt'])
+```
+
+### Perplexity Parameter
+
+```python
+# Try different perplexities
+for perp in [5, 30, 50, 100]:
+    sc.tl.tsne(adata, n_pcs=30, perplexity=perp)
+    sc.pl.tsne(adata, color='cell_type', title=f'Perplexity={perp}')
+```
+
+**Perplexity**: Balance between local and global structure
+- Low (5-15): Emphasizes local structure
+- High (30-100): Emphasizes global structure
+
+## UMAP (Uniform Manifold Approximation and Projection)
+
+### Advantages over t-SNE
+
+- Faster computation
+- Better preserves global structure
+- More reproducible
+- Can learn from supervised labels
+
+### Running UMAP
+
+```python
+# Compute neighbors
+sc.pp.neighbors(adata, n_neighbors=15, n_pcs=30)
+
+# Compute UMAP
+sc.tl.umap(adata)
+
+# Visualize
+sc.pl.umap(adata, color=['cell_type', 'n_genes', 'sample'])
+```
+
+### Key Parameters
+
+```python
+# min_dist: Controls how tightly points cluster
+sc.tl.umap(adata, min_dist=0.1)  # Tighter clusters
+sc.tl.umap(adata, min_dist=0.5)  # Looser clusters
+
+# n_neighbors: Balance local vs global
+sc.tl.umap(adata, n_neighbors=5)   # Local structure
+sc.tl.umap(adata, n_neighbors=50)  # Global structure
+```
+
+## Comparison: PCA vs t-SNE vs UMAP
+
+| Feature | PCA | t-SNE | UMAP |
+|---------|-----|-------|------|
+| Speed | Fast | Slow | Fast |
+| Global structure | Yes | No | Partial |
+| Local structure | No | Yes | Yes |
+| Deterministic | Yes | No | Mostly |
+| Interpretable | Yes | No | No |
+
+## Visualizing Multiple Features
+
+```python
+# Plot multiple genes
+genes = ['BDNF', 'SYN1', 'GFAP', 'MBP']
+sc.pl.umap(adata, color=genes, cmap='viridis')
+
+# Plot QC metrics
+sc.pl.umap(adata, color=['n_genes', 'total_counts', 'pct_counts_mt'])
+
+# Plot categorical variables
+sc.pl.umap(adata, color=['sample', 'phase', 'cluster'])
+```
+
+## Feature Plots (Gene Expression)
+
+```python
+# Single gene
+sc.pl.umap(adata, color='BDNF', use_raw=False, cmap='Reds')
+
+# Multiple genes
+sc.pl.umap(adata, color=['BDNF', 'SYN1', 'GFAP', 'MBP'],
+           ncols=2, cmap='viridis')
+
+# With size scaling
+sc.pl.umap(adata, color='BDNF', size=50, alpha=0.8)
+```
+
+## Density Plots
+
+```python
+# Cell density
+sc.tl.embedding_density(adata, basis='umap', groupby='cell_type')
+sc.pl.embedding_density(adata, basis='umap', key='umap_density_cell_type')
+```
+
+## 3D Visualizations
+
+```python
+# 3D UMAP
+sc.tl.umap(adata, n_components=3)
+sc.pl.umap(adata, color='cell_type', projection='3d')
+```
+
+## Batch Effect Visualization
+
+```python
+# Check for batch effects
+sc.pl.umap(adata, color='batch')
+
+# Before and after correction
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+sc.pl.umap(adata_uncorrected, color='batch', ax=ax1, show=False, title='Before')
+sc.pl.umap(adata_corrected, color='batch', ax=ax2, show=False, title='After')
+plt.tight_layout()
+```
+
+## Practical Tips
+
+::: {.callout-tip}
+## Best Practices
+
+- Always start with PCA
+- Use 30-50 PCs for downstream analysis
+- UMAP is generally preferred over t-SNE
+- Try different parameter settings
+- Don't over-interpret distances
+- Validate findings with gene expression
+- Use multiple visualization methods
+:::
+
+## Common Pitfalls
+
+- Over-interpreting t-SNE/UMAP distances
+- Using too few highly variable genes
+- Not scaling data before PCA
+- Ignoring batch effects
+- Using inappropriate color scales
+
+## Interpreting Results
+
+### Good Clustering
+
+- Clear separation of known cell types
+- Consistent with marker gene expression
+- Reproducible across parameters
+
+### Red Flags
+
+- Cells separated by technical factors (batch, QC metrics)
+- No separation of known cell types
+- Results highly sensitive to parameters
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Preprocess your data (normalize, identify HVGs)
+2. Run PCA and examine variance explained
+3. Compute t-SNE with different perplexities
+4. Compute UMAP with different parameters
+5. Visualize known marker genes
+6. Compare and interpret results
+:::
+
+## Key Takeaways
+
+- Dimensionality reduction enables visualization
+- PCA provides interpretable, linear reduction
+- UMAP is preferred for visualization
+- Parameters matter—explore different settings
+- Always validate with biological knowledge
+- Distances in 2D plots can be misleading
+
+## Additional Resources
+
+- [Understanding UMAP](https://pair-code.github.io/understanding-umap/)
+- [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/)
+- [Scanpy UMAP Tutorial](https://scanpy-tutorials.readthedocs.io/)
+
+## Next Module
+
+With visualizations ready, let's integrate multiple datasets!
+
+[Continue to Module 9: Data Integration →](09-data-integration.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

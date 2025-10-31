@@ -1,0 +1,372 @@
+---
+title: "Module 5: Fundamentals of Python - Part 1"
+subtitle: "Introduction to Python Programming for Data Science"
+---
+
+## Overview
+
+Python is the primary language for bioinformatics and data science. This module introduces Python fundamentals including data types, control structures, and functions.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Set up Python environment
+- Understand basic data types and variables
+- Use control flow statements
+- Write and call functions
+- Work with strings and lists
+- Handle errors and exceptions
+:::
+
+## Why Python for Bioinformatics?
+
+- **Readability**: Clean, easy-to-understand syntax
+- **Libraries**: Rich ecosystem (Scanpy, Pandas, NumPy)
+- **Community**: Large user base and support
+- **Versatility**: Data analysis, visualization, machine learning
+- **Integration**: Works well with other tools
+
+## Getting Started
+
+### Installation Options
+
+**Anaconda (Recommended)**
+```bash
+# Download and install Anaconda
+wget https://repo.anaconda.com/archive/Anaconda3-latest-Linux-x86_64.sh
+bash Anaconda3-latest-Linux-x86_64.sh
+
+# Create environment
+conda create -n brain python=3.10
+conda activate brain
+```
+
+**Pip**
+```bash
+pip install jupyter numpy pandas matplotlib seaborn scanpy
+```
+
+### Running Python
+
+```bash
+python script.py        # Run a script
+python                  # Interactive Python
+jupyter notebook        # Launch Jupyter
+ipython                 # Enhanced interactive Python
+```
+
+## Basic Syntax
+
+### Variables and Data Types
+
+```python
+# Numbers
+age = 25
+pi = 3.14159
+
+# Strings
+name = "neuron"
+gene = 'BDNF'
+
+# Boolean
+is_expressed = True
+
+# Check type
+print(type(age))  # <class 'int'>
+```
+
+### Basic Operations
+
+```python
+# Arithmetic
+x = 10 + 5   # Addition
+y = 10 - 5   # Subtraction
+z = 10 * 5   # Multiplication
+w = 10 / 5   # Division
+mod = 10 % 3 # Modulus
+exp = 2 ** 3 # Exponent
+
+# String operations
+full_name = "first" + " " + "last"
+repeated = "ATG" * 3  # "ATGATGATG"
+```
+
+## Data Structures
+
+### Lists
+
+```python
+# Create lists
+genes = ["BDNF", "SYN1", "GFAP", "MBP"]
+numbers = [1, 2, 3, 4, 5]
+mixed = [1, "hello", 3.14, True]
+
+# Access elements
+first_gene = genes[0]     # "BDNF"
+last_gene = genes[-1]     # "MBP"
+
+# Slicing
+first_two = genes[0:2]    # ["BDNF", "SYN1"]
+
+# Modify lists
+genes.append("NeuN")      # Add to end
+genes.insert(0, "DCX")    # Insert at position
+genes.remove("GFAP")      # Remove by value
+popped = genes.pop()      # Remove and return last
+
+# List operations
+length = len(genes)
+sorted_genes = sorted(genes)
+```
+
+### Dictionaries
+
+```python
+# Create dictionary
+cell_counts = {
+    "neurons": 1000,
+    "astrocytes": 500,
+    "microglia": 200
+}
+
+# Access values
+neuron_count = cell_counts["neurons"]
+
+# Add/modify
+cell_counts["oligodendrocytes"] = 300
+
+# Methods
+keys = cell_counts.keys()
+values = cell_counts.values()
+items = cell_counts.items()
+
+# Check existence
+if "neurons" in cell_counts:
+    print("Neurons found")
+```
+
+### Tuples and Sets
+
+```python
+# Tuples (immutable)
+coordinates = (10, 20, 30)
+x, y, z = coordinates  # Unpacking
+
+# Sets (unique elements)
+cell_types = {"neuron", "astrocyte", "microglia"}
+cell_types.add("oligodendrocyte")
+cell_types.remove("microglia")
+```
+
+## Control Flow
+
+### Conditional Statements
+
+```python
+# If-elif-else
+expression_level = 100
+
+if expression_level > 100:
+    print("High expression")
+elif expression_level > 50:
+    print("Medium expression")
+else:
+    print("Low expression")
+
+# Ternary operator
+status = "expressed" if expression_level > 10 else "not expressed"
+```
+
+### Loops
+
+```python
+# For loop
+genes = ["BDNF", "SYN1", "GFAP"]
+for gene in genes:
+    print(f"Processing {gene}")
+
+# With index
+for i, gene in enumerate(genes):
+    print(f"{i}: {gene}")
+
+# While loop
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+
+# List comprehension
+squared = [x**2 for x in range(10)]
+expressed_genes = [g for g in genes if len(g) > 3]
+```
+
+## Functions
+
+### Defining Functions
+
+```python
+# Basic function
+def greet(name):
+    """Greet a person by name."""
+    return f"Hello, {name}!"
+
+# Function with default arguments
+def calculate_tpm(counts, length=1000):
+    """Calculate transcripts per million."""
+    rate = counts / length
+    tpm = rate * 1e6
+    return tpm
+
+# Multiple return values
+def get_stats(values):
+    """Return mean and std of values."""
+    mean = sum(values) / len(values)
+    std = calculate_std(values)
+    return mean, std
+
+# Call function
+result = greet("Alice")
+mean, std = get_stats([1, 2, 3, 4, 5])
+```
+
+### Lambda Functions
+
+```python
+# Anonymous function
+square = lambda x: x ** 2
+
+# With map
+numbers = [1, 2, 3, 4, 5]
+squared = list(map(lambda x: x**2, numbers))
+
+# With filter
+evens = list(filter(lambda x: x % 2 == 0, numbers))
+```
+
+## Working with Strings
+
+### String Methods
+
+```python
+sequence = "ATGCGATCGATCG"
+
+# Case conversion
+lower = sequence.lower()
+upper = sequence.upper()
+
+# Searching
+position = sequence.find("GAT")
+count = sequence.count("AT")
+
+# Splitting and joining
+words = "neuron astrocyte microglia".split()
+joined = "-".join(words)
+
+# Replacing
+new_seq = sequence.replace("A", "T")
+
+# Stripping whitespace
+clean = "  text  ".strip()
+```
+
+### String Formatting
+
+```python
+gene = "BDNF"
+expression = 123.456
+
+# f-strings (recommended)
+message = f"{gene} expression: {expression:.2f}"
+
+# format method
+message = "{} expression: {:.2f}".format(gene, expression)
+
+# Old style
+message = "%s expression: %.2f" % (gene, expression)
+```
+
+## File I/O
+
+### Reading Files
+
+```python
+# Read entire file
+with open("data.txt", "r") as f:
+    content = f.read()
+
+# Read line by line
+with open("data.txt", "r") as f:
+    for line in f:
+        process(line.strip())
+
+# Read all lines into list
+with open("data.txt", "r") as f:
+    lines = f.readlines()
+```
+
+### Writing Files
+
+```python
+# Write to file
+with open("output.txt", "w") as f:
+    f.write("Hello, World!\n")
+
+# Append to file
+with open("output.txt", "a") as f:
+    f.write("New line\n")
+```
+
+## Error Handling
+
+### Try-Except
+
+```python
+try:
+    value = int(input("Enter a number: "))
+    result = 100 / value
+except ValueError:
+    print("Invalid input")
+except ZeroDivisionError:
+    print("Cannot divide by zero")
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    print("Cleanup code")
+```
+
+## Practical Exercises
+
+::: {.callout-important}
+## Hands-On Practice
+
+1. Create a function to calculate GC content
+2. Parse a FASTA file
+3. Count k-mers in a sequence
+4. Filter genes by expression threshold
+5. Calculate basic statistics
+:::
+
+## Key Takeaways
+
+- Python has clean, readable syntax
+- Lists and dictionaries are fundamental data structures
+- Functions enable code reuse
+- Control flow structures handle logic
+- File I/O is essential for data processing
+- Error handling prevents crashes
+
+## Additional Resources
+
+- [Python Official Tutorial](https://docs.python.org/3/tutorial/)
+- [Python for Biologists](https://pythonforbiologists.com/)
+- [Real Python Tutorials](https://realpython.com/)
+
+## Next Module
+
+Build on these foundations with advanced Python concepts!
+
+[Continue to Module 6: Fundamentals of Python Part 2 →](06-python-part2.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

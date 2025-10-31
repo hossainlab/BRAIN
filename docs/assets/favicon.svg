@@ -1,0 +1,28 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#ffffff"/>
+
+  <!-- Simplified brain icon -->
+  <g transform="translate(16, 14)">
+    <!-- Left hemisphere -->
+    <path d="M -6,0 Q -8,-5 -5,-7 Q -3,-8 -1,-7 Q 0,-6 0,0 Q -1,5 -3,7 Q -5,7 -6,5 Q -7,2 -6,0 Z"
+          fill="url(#grad)" stroke="#8B5CF6" stroke-width="0.5"/>
+
+    <!-- Right hemisphere -->
+    <path d="M 6,0 Q 8,-5 5,-7 Q 3,-8 1,-7 Q 0,-6 0,0 Q 1,5 3,7 Q 5,7 6,5 Q 7,2 6,0 Z"
+          fill="url(#grad)" stroke="#EC4899" stroke-width="0.5"/>
+
+    <!-- Neural nodes -->
+    <circle cx="-4" cy="-3" r="0.8" fill="#fff"/>
+    <circle cx="4" cy="-3" r="0.8" fill="#fff"/>
+    <circle cx="-4" cy="4" r="0.8" fill="#fff"/>
+    <circle cx="4" cy="4" r="0.8" fill="#fff"/>
+  </g>
+</svg>

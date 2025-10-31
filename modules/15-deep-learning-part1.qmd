@@ -1,0 +1,431 @@
+---
+title: "Module 15: Deep Learning in Single-Cell Genomics - Part 1"
+subtitle: "Neural Networks and Autoencoders for scRNA-seq"
+---
+
+## Overview
+
+Deep learning offers powerful approaches for analyzing complex single-cell data, including dimensionality reduction, batch correction, and generative modeling.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand deep learning fundamentals
+- Apply autoencoders for dimensionality reduction
+- Use variational autoencoders (VAEs)
+- Implement scVI for batch correction
+- Train neural networks with PyTorch/TensorFlow
+:::
+
+## Why Deep Learning for Single-Cell?
+
+**Advantages**:
+- Handle high-dimensional data
+- Learn complex non-linear patterns
+- Integrate multiple data modalities
+- Scalable to millions of cells
+- Transfer learning from large datasets
+
+**Applications**:
+- Dimensionality reduction
+- Batch effect correction
+- Data integration
+- Imputation
+- Cell type prediction
+- Perturbation modeling
+
+## Deep Learning Basics
+
+### Neural Networks
+
+```python
+import torch
+import torch.nn as nn
+
+# Simple neural network
+class SimpleNN(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        return x
+
+# Create model
+model = SimpleNN(input_dim=2000, hidden_dim=128, output_dim=10)
+```
+
+### Training Loop
+
+```python
+import torch.optim as optim
+
+# Setup
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+for epoch in range(100):
+    # Forward pass
+    outputs = model(inputs)
+    loss = criterion(outputs, labels)
+
+    # Backward pass
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    if epoch % 10 == 0:
+        print(f'Epoch {epoch}, Loss: {loss.item():.4f}')
+```
+
+## Autoencoders for Dimensionality Reduction
+
+### Architecture
+
+```python
+class Autoencoder(nn.Module):
+    def __init__(self, input_dim, latent_dim):
+        super().__init__()
+
+        # Encoder
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 1024),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(512, latent_dim)
+        )
+
+        # Decoder
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_dim, 512),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(512, 1024),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(1024, input_dim)
+        )
+
+    def forward(self, x):
+        latent = self.encoder(x)
+        reconstructed = self.decoder(latent)
+        return reconstructed, latent
+
+# Create autoencoder
+ae = Autoencoder(input_dim=2000, latent_dim=32)
+```
+
+### Training Autoencoder
+
+```python
+from torch.utils.data import DataLoader, TensorDataset
+
+# Prepare data
+X_tensor = torch.FloatTensor(adata.X.toarray())
+dataset = TensorDataset(X_tensor)
+dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
+
+# Loss function
+criterion = nn.MSELoss()
+optimizer = optim.Adam(ae.parameters(), lr=0.001)
+
+# Train
+for epoch in range(50):
+    total_loss = 0
+
+    for batch in dataloader:
+        data = batch[0]
+
+        # Forward pass
+        reconstructed, latent = ae(data)
+        loss = criterion(reconstructed, data)
+
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        total_loss += loss.item()
+
+    if epoch % 10 == 0:
+        print(f'Epoch {epoch}, Loss: {total_loss/len(dataloader):.4f}')
+
+# Extract latent representation
+ae.eval()
+with torch.no_grad():
+    _, latent = ae(X_tensor)
+    adata.obsm['X_ae'] = latent.numpy()
+
+# Visualize
+sc.pp.neighbors(adata, use_rep='X_ae')
+sc.tl.umap(adata)
+sc.pl.umap(adata, color='cell_type')
+```
+
+## Variational Autoencoders (VAE)
+
+### Architecture
+
+```python
+class VAE(nn.Module):
+    def __init__(self, input_dim, latent_dim):
+        super().__init__()
+
+        # Encoder
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 512),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(512, 256),
+            nn.ReLU()
+        )
+
+        self.fc_mu = nn.Linear(256, latent_dim)
+        self.fc_logvar = nn.Linear(256, latent_dim)
+
+        # Decoder
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_dim, 256),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(512, input_dim)
+        )
+
+    def encode(self, x):
+        h = self.encoder(x)
+        mu = self.fc_mu(h)
+        logvar = self.fc_logvar(h)
+        return mu, logvar
+
+    def reparameterize(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return mu + eps * std
+
+    def decode(self, z):
+        return self.decoder(z)
+
+    def forward(self, x):
+        mu, logvar = self.encode(x)
+        z = self.reparameterize(mu, logvar)
+        reconstructed = self.decode(z)
+        return reconstructed, mu, logvar
+
+# VAE loss function
+def vae_loss(reconstructed, original, mu, logvar):
+    reconstruction_loss = nn.MSELoss()(reconstructed, original)
+    kld_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    return reconstruction_loss + kld_loss
+```
+
+## scVI: Single-Cell Variational Inference
+
+### Installation
+
+```bash
+pip install scvi-tools
+```
+
+### Basic Usage
+
+```python
+import scvi
+
+# Setup
+scvi.model.SCVI.setup_anndata(
+    adata,
+    layer="counts",
+    batch_key="batch",
+    labels_key="cell_type"
+)
+
+# Create and train model
+model = scvi.model.SCVI(adata, n_latent=30)
+model.train()
+
+# Get latent representation
+latent = model.get_latent_representation()
+adata.obsm['X_scVI'] = latent
+
+# Compute UMAP on scVI latent space
+sc.pp.neighbors(adata, use_rep='X_scVI')
+sc.tl.umap(adata)
+
+# Visualize
+sc.pl.umap(adata, color=['batch', 'cell_type'])
+```
+
+### scVI for Batch Correction
+
+```python
+# Train model
+model = scvi.model.SCVI(
+    adata,
+    n_layers=2,
+    n_latent=30,
+    gene_likelihood="nb"
+)
+
+model.train(
+    max_epochs=400,
+    early_stopping=True
+)
+
+# Get batch-corrected expression
+adata.layers['scvi_normalized'] = model.get_normalized_expression()
+
+# Get latent representation
+adata.obsm['X_scVI'] = model.get_latent_representation()
+
+# Downstream analysis
+sc.pp.neighbors(adata, use_rep='X_scVI')
+sc.tl.leiden(adata)
+sc.tl.umap(adata)
+
+sc.pl.umap(adata, color=['batch', 'cell_type', 'leiden'])
+```
+
+## scANVI: Semi-supervised Learning
+
+```python
+# Train scVI first
+vae = scvi.model.SCVI(adata, n_latent=30)
+vae.train()
+
+# Train scANVI with labels
+lvae = scvi.model.SCANVI.from_scvi_model(
+    vae,
+    unlabeled_category="Unknown",
+    labels_key="cell_type"
+)
+
+lvae.train(max_epochs=20)
+
+# Predict cell types
+adata.obs["predicted_cell_type"] = lvae.predict()
+
+# Get latent representation
+adata.obsm['X_scANVI'] = lvae.get_latent_representation()
+
+# Visualize
+sc.pl.umap(adata, color=['cell_type', 'predicted_cell_type'])
+```
+
+## totalVI: RNA + Protein Integration
+
+```python
+# For CITE-seq data
+scvi.model.TOTALVI.setup_anndata(
+    adata,
+    batch_key="batch",
+    protein_expression_obsm_key="protein_expression",
+    protein_names_uns_key="protein_names"
+)
+
+# Train model
+model = scvi.model.TOTALVI(adata, n_latent=20)
+model.train()
+
+# Get joint latent representation
+latent = model.get_latent_representation()
+adata.obsm['X_totalVI'] = latent
+
+# Get denoised protein expression
+protein_normalized = model.get_normalized_expression(
+    n_samples=25,
+    return_mean=True,
+    transform_batch="batch1"
+)
+```
+
+## Model Evaluation
+
+### Reconstruction Error
+
+```python
+# Evaluate reconstruction
+model.eval()
+with torch.no_grad():
+    reconstructed, _ = model(X_test)
+    mse = nn.MSELoss()(reconstructed, X_test)
+    print(f"Test MSE: {mse.item():.4f}")
+```
+
+### Clustering Metrics
+
+```python
+from sklearn.metrics import adjusted_rand_score, silhouette_score
+
+# Calculate metrics
+ari = adjusted_rand_score(true_labels, predicted_labels)
+silhouette = silhouette_score(latent_representation, predicted_labels)
+
+print(f"ARI: {ari:.3f}")
+print(f"Silhouette: {silhouette:.3f}")
+```
+
+## Best Practices
+
+::: {.callout-tip}
+## Deep Learning Tips
+
+- Normalize data appropriately
+- Use appropriate loss functions
+- Monitor training/validation loss
+- Use early stopping
+- Try different architectures
+- Use GPU for large datasets
+- Cross-validate hyperparameters
+- Save trained models
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+1. Load single-cell dataset with batch effects
+2. Build and train a simple autoencoder
+3. Visualize latent representation
+4. Train scVI model for batch correction
+5. Compare with traditional methods
+6. Evaluate integration quality
+7. Use scANVI for cell type prediction
+:::
+
+## Key Takeaways
+
+- Deep learning handles high-dimensional scRNA-seq data
+- Autoencoders learn compact representations
+- VAEs enable generative modeling
+- scVI provides probabilistic framework
+- Batch correction with deep learning is powerful
+- Multiple specialized tools available
+
+## Additional Resources
+
+- [scvi-tools Documentation](https://docs.scvi-tools.org/)
+- [PyTorch Tutorials](https://pytorch.org/tutorials/)
+- [Deep Learning for Single-Cell Review](https://www.nature.com/articles/s41576-022-00534-z)
+
+## Next Module
+
+Continue with advanced deep learning topics!
+
+[Continue to Module 16: Deep Learning Part 2 →](16-deep-learning-part2.qmd){.btn}
+
+---
+
+[← Back to Schedule](../schedule.qmd)

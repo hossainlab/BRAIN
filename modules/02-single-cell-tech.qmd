@@ -1,0 +1,277 @@
+---
+title: "Module 2: Introduction to Single-Cell Technology"
+subtitle: "Exploring Cellular Heterogeneity at Unprecedented Resolution"
+---
+
+## Overview
+
+Single-cell RNA sequencing (scRNA-seq) has revolutionized our ability to study gene expression at the individual cell level. This module introduces the principles, technologies, and applications of single-cell approaches in neuroscience.
+
+::: {.callout-note}
+## Learning Objectives
+
+- Understand the principles of single-cell RNA sequencing
+- Learn about different scRNA-seq platforms and technologies
+- Recognize applications of single-cell approaches in neuroscience
+- Appreciate the advantages and limitations of single-cell technologies
+- Identify key experimental design considerations
+:::
+
+## Why Single-Cell?
+
+### Limitations of Bulk RNA-seq
+
+Traditional bulk RNA sequencing analyzes the average gene expression across millions of cells, masking:
+
+- Cellular heterogeneity
+- Rare cell populations
+- Cell-state transitions
+- Cell-type-specific responses
+
+### Single-Cell Revolution
+
+::: {.card}
+**Single-cell technologies enable**:
+
+- Cell-type identification and characterization
+- Discovery of rare cell populations
+- Trajectory and lineage inference
+- Cell-state dynamics
+- Spatial organization (with spatial methods)
+:::
+
+## Single-Cell RNA-seq Workflow
+
+### 1. Sample Preparation
+
+- Tissue dissociation
+- Cell isolation and purification
+- Quality control of cell viability
+- Cell counting and concentration
+
+### 2. Cell Capture & Barcoding
+
+::: {.module-card}
+**Common platforms**:
+
+- **10x Genomics Chromium**: Droplet-based, high-throughput
+- **Smart-seq2/3**: Full-length transcripts, plate-based
+- **Drop-seq**: Open-source droplet platform
+- **inDrop**: Droplet-based with in-house barcodes
+- **CITE-seq**: Simultaneous RNA and protein
+:::
+
+### 3. Library Preparation
+
+- Reverse transcription
+- cDNA amplification
+- Library construction
+- Quality control
+
+### 4. Sequencing
+
+- Next-generation sequencing (Illumina)
+- Sequencing depth considerations
+- Cost vs. coverage trade-offs
+
+### 5. Computational Analysis
+
+- Read alignment and quantification
+- Quality control and filtering
+- Normalization and batch correction
+- Dimensionality reduction
+- Clustering and cell type annotation
+
+## 10x Genomics Technology
+
+### Chromium Platform
+
+The most widely used commercial single-cell platform:
+
+::: {.card}
+**Key Features**:
+
+- Droplet-based cell capture
+- Gel bead-based barcoding
+- 3' or 5' gene expression profiling
+- High throughput (500-10,000 cells per sample)
+- Multiome capabilities (RNA + ATAC)
+:::
+
+### How It Works
+
+1. **Cell suspension** is loaded into the Chromium controller
+2. **Gel beads** containing barcoded oligonucleotides
+3. **Droplets** encapsulate single cells with gel beads
+4. **Cell lysis** and reverse transcription within droplets
+5. **Unique barcodes** tag each cell's transcripts
+6. **Pool and sequence** all cells together
+
+## Applications in Neuroscience
+
+### Brain Cell Atlas Projects
+
+- Human Cell Atlas
+- BRAIN Initiative Cell Census Network (BICCN)
+- Allen Brain Cell Atlas
+- Species-comparative brain atlases
+
+### Disease Research
+
+::: {.module-card}
+**Applications**:
+
+- Alzheimer's disease pathology
+- Neuroinflammation in disease
+- Cancer (glioblastoma) heterogeneity
+- Neurodevelopmental disorders
+- Psychiatric disorder mechanisms
+:::
+
+### Development and Aging
+
+- Brain development trajectories
+- Neurogenesis and gliogenesis
+- Aging-associated changes
+- Cellular senescence
+
+## Beyond Standard scRNA-seq
+
+### Single-Nucleus RNA-seq (snRNA-seq)
+
+::: {.card}
+**Advantages for brain tissue**:
+
+- Works with frozen tissue
+- Captures difficult-to-dissociate neurons
+- Preserves cell-type proportions better
+- Reduces dissociation-induced artifacts
+:::
+
+### Spatial Transcriptomics
+
+- **Visium (10x Genomics)**: Spatial gene expression
+- **MERFISH**: Multiplexed error-robust FISH
+- **seqFISH**: Sequential fluorescence in situ hybridization
+- **Slide-seq**: High-resolution spatial sequencing
+
+### Multimodal Technologies
+
+- **CITE-seq**: RNA + surface proteins
+- **ATAC + RNA**: Chromatin accessibility and gene expression
+- **SHARE-seq**: Simultaneous RNA and ATAC
+- **Patch-seq**: Electrophysiology + transcriptomics
+
+## Experimental Design Considerations
+
+### Sample Size
+
+- Number of biological replicates
+- Cells per sample (technical depth)
+- Statistical power considerations
+
+### Technical Considerations
+
+::: {.callout-important}
+## Key Factors
+
+- Fresh vs. frozen tissue
+- Cell viability requirements
+- Capture efficiency (typically 50-80%)
+- Sequencing depth (reads per cell)
+- Batch effects and confounders
+:::
+
+### Cost Considerations
+
+- Per-cell costs
+- Sequencing costs
+- Computational infrastructure
+- Trade-off: more cells vs. deeper sequencing
+
+## Quality Control Metrics
+
+### Cell-Level QC
+
+- Number of detected genes (complexity)
+- Total UMI counts (sequencing depth)
+- Mitochondrial content (cell stress/death)
+- Doublet detection
+
+### Gene-Level QC
+
+- Genes detected across cells
+- Expression distribution
+- Technical noise estimation
+
+## Challenges and Limitations
+
+1. **Technical noise**: Dropout events, amplification bias
+2. **Cost**: Still expensive for large studies
+3. **Computational demands**: Large datasets, complex analyses
+4. **Batch effects**: Technical variation across experiments
+5. **Interpretation**: Biological meaning of clusters
+
+## Best Practices
+
+::: {.callout-tip}
+## Recommendations
+
+- Include appropriate biological replicates
+- Use standardized protocols
+- Record detailed metadata
+- Implement rigorous QC at each step
+- Use established computational workflows
+- Validate findings with orthogonal methods
+:::
+
+## Practical Exercise
+
+::: {.callout-important}
+## Hands-On Activity
+
+Explore a published single-cell brain dataset:
+
+1. Visit the Allen Brain Map Single Cell Portal
+2. Browse available brain datasets
+3. Examine cell type diversity in a region of interest
+4. Compare gene expression across cell types
+5. Consider: What biological questions could this data answer?
+:::
+
+## Key Takeaways
+
+- Single-cell RNA-seq reveals cellular heterogeneity invisible to bulk methods
+- Multiple platforms exist with different trade-offs
+- 10x Genomics is the most widely used commercial platform
+- Brain tissue presents unique challenges (cell size, fragility)
+- Careful experimental design is crucial for success
+- Technology continues to evolve with multimodal approaches
+
+## Additional Resources
+
+### Recommended Readings
+
+1. **"Single-cell RNA-seq: a primer"** - Nature Methods
+2. **"Best practices for single-cell analysis"** - Molecular Systems Biology
+3. **"Single-cell genomics in neuroscience"** - Nature Reviews Neuroscience
+
+### Tutorials
+
+- 10x Genomics Support Documentation
+- Seurat tutorials and vignettes
+- Scanpy tutorials for Python users
+
+## Next Module
+
+Now that you understand single-cell technology, let's build the computational skills needed to analyze this data!
+
+[Continue to Module 3: Linux Command Line Fundamentals →](03-linux-fundamentals.qmd){.btn}
+
+---
+
+::: {.callout-note}
+## Questions?
+
+Reach out via the course discussion forum or during office hours listed on the [Schedule](../schedule.qmd) page.
+:::
