@@ -1,0 +1,1022 @@
+---
+title: "Data Sources for Single-Cell Analysis"
+subtitle: "Comprehensive Guide to Finding and Downloading Single-Cell Datasets"
+author: "BRAIN Course"
+date: last-modified
+toc: true
+toc-depth: 3
+number-sections: true
+---
+
+# Overview {.unnumbered}
+
+This guide provides comprehensive instructions for accessing, searching, and downloading single-cell RNA-seq datasets from major public repositories. Whether you're working on course assignments or your own research projects, these resources will help you find high-quality neurogenomics and single-cell data.
+
+:::{.callout-tip}
+## Quick Start
+If you're new to single-cell data, start with **10X Genomics Public Datasets** or **Single Cell Portal** - they provide preprocessed, ready-to-use data with excellent documentation.
+:::
+
+---
+
+# 10X Genomics Public Datasets
+
+## Overview
+10X Genomics provides free, high-quality single-cell datasets that are widely used for benchmarking and tutorials. All datasets include raw FASTQ files, processed count matrices, and detailed QC reports.
+
+## Accessing the Data
+
+### Website Access
+1. **Navigate to**: [https://www.10xgenomics.com/datasets](https://www.10xgenomics.com/datasets)
+2. **Browse by**:
+   - Tissue type (PBMC, brain, heart, etc.)
+   - Cell count
+   - Chemistry version (v2, v3, v3.1)
+   - Single-cell technology (3' Gene Expression, 5' Gene Expression, Multiome)
+
+### Step-by-Step Download Guide
+
+#### Method 1: Direct Browser Download
+
+```bash
+# 1. Visit the dataset page
+# Example: PBMC 3k dataset
+# https://www.10xgenomics.com/resources/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0
+
+# 2. Download files:
+# - Feature / cell matrix (filtered)
+# - Feature / cell matrix (raw)
+# - Clustering analysis (Loupe Browser file)
+# - Web summary HTML
+```
+
+#### Method 2: Command Line Download (wget/curl)
+
+```bash
+# Create a directory for your data
+mkdir -p ~/data/10x_pbmc3k
+cd ~/data/10x_pbmc3k
+
+# Download filtered feature-barcode matrix (HDF5 format)
+wget https://cf.10xgenomics.com/samples/cell-exp/3.0.0/pbmc_1k_v3/pbmc_1k_v3_filtered_feature_bc_matrix.h5
+
+# Download MEX format (can be loaded by scanpy)
+wget https://cf.10xgenomics.com/samples/cell-exp/3.0.0/pbmc_1k_v3/pbmc_1k_v3_filtered_feature_bc_matrix.tar.gz
+
+# Extract the archive
+tar -xzf pbmc_1k_v3_filtered_feature_bc_matrix.tar.gz
+```
+
+#### Method 3: Download with Python (scanpy)
+
+```python
+import scanpy as sc
+
+# Many 10X datasets are built into scanpy
+adata = sc.datasets.pbmc3k()
+adata = sc.datasets.pbmc68k_reduced()
+
+# Or download directly from 10X
+adata = sc.read_10x_h5('pbmc_1k_v3_filtered_feature_bc_matrix.h5')
+
+# For MEX format
+adata = sc.read_10x_mtx(
+    'filtered_feature_bc_matrix/',
+    var_names='gene_symbols',
+    cache=True
+)
+```
+
+### Popular 10X Datasets for This Course
+
+| Dataset | Cells | Tissue | Use Case | Link |
+|---------|-------|--------|----------|------|
+| PBMC 3k | 2,700 | Blood | QC, clustering tutorial | [Link](https://www.10xgenomics.com/resources/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0) |
+| PBMC 10k | 10,000 | Blood | Deep learning, integration | [Link](https://www.10xgenomics.com/resources/datasets/10-k-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-standard-3-0-0) |
+| Mouse Brain 1k | 1,000 | Brain | Neurogenomics | [Link](https://www.10xgenomics.com/resources/datasets/1-k-brain-cells-from-an-e-18-mouse-v-3-chemistry-3-standard-3-0-0) |
+| Heart 10k | 10,000 | Heart | Cell type diversity | [Link](https://www.10xgenomics.com/resources/datasets/10-k-heart-cells-from-an-e-18-mouse-v-3-chemistry-3-standard-3-0-0) |
+
+:::{.callout-note}
+## File Formats Explained
+- **HDF5 (.h5)**: Compact binary format, fastest to load
+- **MEX**: Matrix Market format (3 files: matrix.mtx, barcodes.tsv, features.tsv)
+- **Filtered**: Cells passing initial QC (recommended for beginners)
+- **Raw**: All droplets including empty ones (for advanced QC)
+:::
+
+---
+
+# Gene Expression Omnibus (GEO)
+
+## Overview
+GEO is NCBI's public repository for high-throughput genomics data. It contains thousands of single-cell RNA-seq datasets from published studies.
+
+## Searching GEO
+
+### Step-by-Step Search Guide
+
+1. **Navigate to**: [https://www.ncbi.nlm.nih.gov/geo/](https://www.ncbi.nlm.nih.gov/geo/)
+
+2. **Search Strategy**:
+```
+# Example searches:
+"single cell RNA-seq" AND "brain"
+"scRNA-seq" AND "neuron"
+"10x genomics" AND "human" AND "brain"
+"single cell" AND "Alzheimer"
+```
+
+3. **Filter Results**:
+   - Click "Advanced Search"
+   - **Entry Type**: Series (for complete studies)
+   - **Organism**: Homo sapiens / Mus musculus
+   - **Study Type**: Expression profiling by high throughput sequencing
+
+### Downloading from GEO
+
+#### Method 1: Web Interface
+
+```bash
+# 1. Find your dataset (e.g., GSE123456)
+# 2. Click on the GSE accession number
+# 3. Scroll to "Supplementary files"
+# 4. Download:
+#    - Count matrices (often *_counts.txt.gz or *_matrix.mtx.gz)
+#    - Metadata (*_metadata.txt)
+#    - Processed data (*_processed.h5ad if available)
+```
+
+#### Method 2: Command Line with GEOquery (R)
+
+```r
+# Install GEOquery
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("GEOquery")
+
+library(GEOquery)
+
+# Download dataset
+gse <- getGEO("GSE123456", GSEMatrix = TRUE)
+
+# Get supplementary files
+getGEOSuppFiles("GSE123456")
+```
+
+#### Method 3: Python with GEOparse
+
+```python
+import GEOparse
+
+# Download and parse GEO dataset
+gse = GEOparse.get_GEO(geo="GSE123456", destdir="./")
+
+# Access metadata
+print(gse.metadata)
+
+# Download supplementary files
+import urllib.request
+import os
+
+accession = "GSE123456"
+url = f"https://ftp.ncbi.nlm.nih.gov/geo/series/{accession[:-3]}nnn/{accession}/suppl/"
+
+# You'll need to parse the FTP directory listing
+# Or use the web interface to see available files
+```
+
+#### Method 4: Direct FTP Download
+
+```bash
+# GEO FTP structure:
+# ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSEnnn/GSE######/
+
+# Example for GSE167096 (Brain dataset)
+cd ~/data/
+mkdir geo_data && cd geo_data
+
+# Download supplementary files
+wget -r -np -nH --cut-dirs=4 \
+  ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE167nnn/GSE167096/suppl/
+
+# Or specific file
+wget ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE167nnn/GSE167096/suppl/GSE167096_matrix.mtx.gz
+```
+
+### Recommended GEO Datasets for Neurogenomics
+
+| GEO Accession | Description | Cells | Publication |
+|---------------|-------------|-------|-------------|
+| GSE157783 | Human prefrontal cortex | ~150k | Morabito et al. 2021 |
+| GSE163577 | Mouse brain aging | ~40k | Ximerakis et al. 2019 |
+| GSE147747 | Alzheimer's disease brain | ~80k | Grubman et al. 2019 |
+| GSE162919 | Human brain organoids | ~30k | Velasco et al. 2019 |
+
+:::{.callout-warning}
+## Data Processing Required
+GEO datasets often require additional processing:
+- Check if counts are raw or normalized
+- Verify gene ID format (Ensembl vs Symbol)
+- Look for accompanying metadata files
+- Read the publication's methods section
+:::
+
+---
+
+# Single Cell Portal
+
+## Overview
+The Broad Institute's Single Cell Portal provides curated, visualized single-cell datasets with interactive exploration tools.
+
+## Accessing Data
+
+### Web Interface
+
+1. **Navigate to**: [https://singlecell.broadinstitute.org/single_cell](https://singlecell.broadinstitute.org/single_cell)
+
+2. **Search and Filter**:
+   - Search by keyword, disease, tissue, or cell type
+   - Filter by organism, library prep, species
+   - Sort by popularity or publication date
+
+3. **Interactive Exploration**:
+   - View UMAP/t-SNE plots online
+   - Explore gene expression without downloading
+   - Check QC metrics and cell type annotations
+
+### Downloading Data
+
+#### Step-by-Step Download
+
+```bash
+# 1. Select a study
+# 2. Click "Download" tab
+# 3. Choose files:
+
+# Expression matrix (recommended: processed, log-normalized)
+wget https://singlecell.broadinstitute.org/single_cell/data/public/...
+
+# Metadata file
+wget https://singlecell.broadinstitute.org/single_cell/data/public/...
+
+# Cluster file (cell type annotations)
+wget https://singlecell.broadinstitute.org/single_cell/data/public/...
+```
+
+#### Loading in Python
+
+```python
+import scanpy as sc
+import pandas as pd
+
+# Load expression matrix
+adata = sc.read_csv('expression_matrix.txt', delimiter='\t')
+
+# Transpose if needed (cells should be rows)
+adata = adata.T
+
+# Load metadata
+metadata = pd.read_csv('metadata.txt', sep='\t', index_col=0)
+adata.obs = metadata
+
+# Load cluster annotations
+clusters = pd.read_csv('clusters.txt', sep='\t', index_col=0)
+adata.obs['cluster'] = clusters['cluster']
+
+print(adata)
+```
+
+### Featured Datasets
+
+| Study | Description | Cells | Disease/Condition |
+|-------|-------------|-------|-------------------|
+| Alzheimer's Disease | Human entorhinal cortex | 13,000+ | Alzheimer's |
+| COVID-19 BALF | Bronchoalveolar lavage | 60,000+ | COVID-19 |
+| Developmental Brain | Human fetal brain | 4 million+ | Development |
+| Tumor Microenvironment | Various tumor types | 100,000+ | Cancer |
+
+---
+
+# Allen Brain Atlas
+
+## Overview
+The Allen Institute provides comprehensive brain transcriptomic datasets, including spatial and single-cell data across multiple species.
+
+## Accessing Allen Brain Data
+
+### Allen Brain Map Data Portal
+
+1. **Navigate to**: [https://portal.brain-map.org/](https://portal.brain-map.org/)
+
+2. **Key Resources**:
+   - **Cell Types Database**: Single-cell transcriptomic profiles
+   - **Developing Human Brain**: Prenatal development
+   - **Aging, Dementia and TBI Study**: Disease-related changes
+   - **Mouse Brain Atlas**: Comprehensive mouse reference
+
+### Downloading Single-Cell Data
+
+#### Method 1: AllenSDK (Python)
+
+```python
+# Install Allen SDK
+# pip install allensdk
+
+from allensdk.core.cell_types_cache import CellTypesCache
+
+# Initialize cache
+ctc = CellTypesCache()
+
+# Get metadata for all cells
+cells = ctc.get_cells()
+
+# Download specific dataset
+from allensdk.api.queries.biophysical_api import BiophysicalApi
+bp = BiophysicalApi()
+
+# Get morphology, electrophysiology data
+# See documentation for detailed examples
+```
+
+#### Method 2: ABC Atlas (Latest Data)
+
+```python
+# Allen Brain Cell (ABC) Atlas data
+# Available at: https://portal.brain-map.org/atlases-and-data/bkp/abc-atlas
+
+# Download instructions specific to your dataset
+# Most recent brain cell atlases are in H5AD format
+
+import scanpy as sc
+
+# Load human brain dataset
+adata = sc.read_h5ad('allen_human_brain_atlas.h5ad')
+
+# Load mouse brain dataset
+adata = sc.read_h5ad('allen_mouse_brain_atlas.h5ad')
+```
+
+#### Method 3: Direct Download
+
+```bash
+# Navigate to specific study page
+# Example: Mouse Whole Cortex and Hippocampus 10x
+
+# Download processed data
+wget https://allen-brain-cell-atlas.s3-us-west-2.amazonaws.com/...
+
+# Or use AWS CLI for large datasets
+aws s3 cp s3://allen-brain-cell-atlas/... . --no-sign-request
+```
+
+### Key Allen Brain Datasets
+
+| Dataset | Species | Cells | Brain Regions | Format |
+|---------|---------|-------|---------------|--------|
+| Mouse Brain Cell Atlas | Mouse | 1.2M+ | Whole brain | H5AD |
+| Human MTG | Human | 15,000+ | Middle temporal gyrus | H5AD |
+| Mouse Visual Cortex | Mouse | 50,000+ | Visual cortex | H5AD |
+| Human M1 | Human | 450,000+ | Primary motor cortex | H5AD |
+
+:::{.callout-tip}
+## Allen Institute Resources
+- **Documentation**: Excellent tutorials and vignettes
+- **API Access**: Programmatic data retrieval
+- **Visualization**: Interactive brain atlases
+- **Cell Type Cards**: Detailed characterization
+:::
+
+---
+
+# CellxGene Data Portal (Chan Zuckerberg Initiative)
+
+## Overview
+CellxGene Discover hosts standardized single-cell datasets with interactive visualization and easy download options.
+
+## Accessing CellxGene
+
+### Web Portal
+
+1. **Navigate to**: [https://cellxgene.cziscience.com/](https://cellxgene.cziscience.com/)
+
+2. **Search Features**:
+   - Filter by tissue, disease, organism
+   - Cell count range
+   - Assay type (10x, Smart-seq2, etc.)
+   - Publication status
+
+3. **Interactive Exploration**:
+   - Explore datasets in browser before downloading
+   - View cell type annotations
+   - Check expression of genes of interest
+
+### Downloading Data
+
+#### Method 1: Web Interface Download
+
+```bash
+# 1. Select dataset
+# 2. Click "Download" button
+# 3. Choose format:
+#    - H5AD (recommended for Python/scanpy)
+#    - RDS (for R/Seurat)
+#    - CSV (for custom analysis)
+
+# Files are typically named:
+# dataset_name.h5ad
+```
+
+#### Method 2: Python API
+
+```python
+import cellxgene_census
+import scanpy as sc
+
+# Access the census (large-scale integration)
+census = cellxgene_census.open_soma()
+
+# Query specific tissues/cell types
+# Example: Get all brain neurons
+query_result = census["census_data"]["homo_sapiens"].obs.read(
+    column_names=["tissue", "cell_type"],
+    value_filter="tissue == 'brain' and cell_type_ontology_term_id in ['CL:0000540']"
+)
+
+# Or download specific collection
+adata = sc.read_h5ad('path_to_downloaded_file.h5ad')
+```
+
+#### Method 3: Command Line Download
+
+```bash
+# Using curl (get download link from web interface)
+curl -o brain_dataset.h5ad "https://datasets.cellxgene.cziscience.com/...h5ad"
+
+# Verify download
+python -c "import scanpy as sc; adata = sc.read_h5ad('brain_dataset.h5ad'); print(adata)"
+```
+
+### Data Format Standards
+
+CellxGene datasets follow strict standards:
+
+```python
+import scanpy as sc
+
+adata = sc.read_h5ad('cellxgene_dataset.h5ad')
+
+# Standard annotations in .obs:
+# - tissue: Tissue of origin
+# - cell_type: Cell type annotation
+# - disease: Disease state
+# - assay: Technology used
+# - organism: Species
+# - sex: Biological sex
+# - development_stage: Age/developmental stage
+
+print(adata.obs.columns)
+```
+
+---
+
+# Human Cell Atlas Data Portal
+
+## Overview
+The Human Cell Atlas (HCA) aims to create comprehensive reference maps of all human cells. Data is organized by tissue and follows standardized formats.
+
+## Accessing HCA Data
+
+### Data Portal
+
+1. **Navigate to**: [https://data.humancellatlas.org/](https://data.humancellatlas.org/)
+
+2. **Browse Projects**:
+   - Filter by organ, sample type
+   - Select by development stage
+   - Choose analysis phase
+
+### Downloading Data
+
+#### Method 1: Web Interface
+
+```bash
+# 1. Select project
+# 2. Click "Download"
+# 3. Choose file type:
+#    - Matrix files
+#    - Analysis results
+#    - Raw sequencing data (FASTQ)
+
+# Use HCA CLI tool
+pip install hca
+
+# Download specific project
+hca dss download --replica aws --bundle-uuid <uuid>
+```
+
+#### Method 2: Terra/AnVIL Platform
+
+The HCA uses Terra for large-scale analysis:
+
+1. Visit [https://app.terra.bio/](https://app.terra.bio/)
+2. Find HCA workspaces
+3. Clone workspace to your account
+4. Access data directly in cloud environment
+
+---
+
+# NCBI Sequence Read Archive (SRA)
+
+## Overview
+SRA stores raw sequencing reads (FASTQ files) for most published studies. Use this when you need raw data for custom processing.
+
+## Searching SRA
+
+### Step-by-Step Guide
+
+```bash
+# 1. Find SRA accession from paper or GEO
+# Format: SRP######, SRR#######, or SRX#######
+
+# 2. Search at: https://www.ncbi.nlm.nih.gov/sra
+
+# 3. Download using SRA Toolkit
+```
+
+### Installing SRA Toolkit
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install sra-toolkit
+
+# Mac
+brew install sratoolkit
+
+# Or download from:
+# https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit
+
+# Configure
+vdb-config --interactive
+```
+
+### Downloading FASTQ Files
+
+```bash
+# Download single run
+fastq-dump --split-files SRR1234567
+
+# Download with compression (recommended)
+fastq-dump --gzip --split-files SRR1234567
+
+# Faster alternative: fasterq-dump
+fasterq-dump --split-files SRR1234567
+pigz *.fastq  # Compress with pigz (parallel gzip)
+
+# Download entire study (project)
+# First, get list of runs
+esearch -db sra -query "SRP123456" | \
+  efetch -format runinfo | \
+  cut -d ',' -f 1 | \
+  grep SRR > srr_list.txt
+
+# Download all runs
+cat srr_list.txt | xargs -n 1 -P 4 fastq-dump --gzip --split-files
+```
+
+### Batch Download Script
+
+```bash
+#!/bin/bash
+# download_sra.sh
+
+# List of SRR accessions
+SRR_LIST=(
+    "SRR1234567"
+    "SRR1234568"
+    "SRR1234569"
+)
+
+# Download each with 4 parallel processes
+for SRR in "${SRR_LIST[@]}"; do
+    echo "Downloading ${SRR}..."
+    fasterq-dump --split-files --threads 4 ${SRR}
+    pigz ${SRR}*.fastq
+done
+
+echo "Download complete!"
+```
+
+:::{.callout-warning}
+## SRA Download Tips
+- **Space**: FASTQ files are large (gigabytes per sample)
+- **Time**: Downloads can take hours/days for full studies
+- **Bandwidth**: Use institutional networks when possible
+- **Prefetch**: Use `prefetch` before `fastq-dump` for reliability
+:::
+
+---
+
+# Array Express (EMBL-EBI)
+
+## Overview
+European equivalent of GEO, hosted by EMBL-EBI. Contains unique European datasets.
+
+## Accessing ArrayExpress
+
+### Search and Download
+
+1. **Navigate to**: [https://www.ebi.ac.uk/arrayexpress/](https://www.ebi.ac.uk/arrayexpress/)
+
+2. **Search**:
+```
+# Example searches:
+single cell RNA-seq brain
+scRNA-seq human neuron
+10x genomics mouse
+```
+
+3. **Download**:
+
+```bash
+# Find accession (E-MTAB-###### or E-GEOD-######)
+
+# Download processed data
+wget https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-######/E-MTAB-######.processed.1.zip
+
+# Download raw data
+wget https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-######/E-MTAB-######.raw.1.zip
+
+# Extract
+unzip E-MTAB-######.processed.1.zip
+```
+
+---
+
+# Loading Downloaded Data in Python/R
+
+## Python (Scanpy)
+
+### Loading Different Formats
+
+```python
+import scanpy as sc
+import pandas as pd
+
+# === H5AD format (scanpy native) ===
+adata = sc.read_h5ad('dataset.h5ad')
+
+# === HDF5/H5 format (10X) ===
+adata = sc.read_10x_h5('filtered_feature_bc_matrix.h5')
+
+# === MEX format (10X) ===
+adata = sc.read_10x_mtx(
+    'filtered_feature_bc_matrix/',
+    var_names='gene_symbols',
+    cache=True
+)
+
+# === CSV/TSV matrix ===
+adata = sc.read_csv('expression_matrix.csv')
+# Or
+adata = sc.read_csv('expression_matrix.txt', delimiter='\t')
+
+# === Loom format ===
+adata = sc.read_loom('dataset.loom')
+
+# === Text matrix with metadata ===
+# Load count matrix
+counts = pd.read_csv('counts.txt', sep='\t', index_col=0)
+adata = sc.AnnData(counts.T)  # Transpose if needed
+
+# Load metadata
+metadata = pd.read_csv('metadata.txt', sep='\t', index_col=0)
+adata.obs = metadata
+
+print(adata)
+```
+
+### Handling Common Issues
+
+```python
+import scanpy as sc
+import numpy as np
+
+# === Transposition issues ===
+# Check dimensions
+print(f"Shape: {adata.shape}")  # Should be (cells, genes)
+
+# If backwards, transpose
+if adata.n_obs < adata.n_vars:
+    print("Transposing...")
+    adata = adata.T
+
+# === Gene ID conversion ===
+# If genes are Ensembl IDs, convert to symbols
+if adata.var_names[0].startswith('ENSG'):
+    # Use biomart or mygene
+    import mygene
+    mg = mygene.MyGeneInfo()
+
+    out = mg.querymany(
+        adata.var_names.tolist(),
+        scopes='ensembl.gene',
+        fields='symbol',
+        species='human'
+    )
+
+    # Map symbols
+    gene_dict = {item['query']: item.get('symbol', item['query'])
+                 for item in out}
+    adata.var_names = [gene_dict.get(x, x) for x in adata.var_names]
+
+# === Making var_names unique ===
+adata.var_names_make_unique()
+
+# === Handling sparse matrices ===
+from scipy.sparse import issparse
+
+if not issparse(adata.X):
+    # Convert to sparse to save memory
+    from scipy.sparse import csr_matrix
+    adata.X = csr_matrix(adata.X)
+```
+
+## R (Seurat)
+
+### Loading Data
+
+```r
+library(Seurat)
+library(Matrix)
+
+# === 10X MEX format ===
+counts <- Read10X(data.dir = "filtered_feature_bc_matrix/")
+seurat_obj <- CreateSeuratObject(counts = counts)
+
+# === H5 format ===
+counts <- Read10X_h5("filtered_feature_bc_matrix.h5")
+seurat_obj <- CreateSeuratObject(counts = counts)
+
+# === CSV/TSV matrix ===
+counts <- read.csv("counts.csv", row.names = 1)
+seurat_obj <- CreateSeuratObject(counts = counts)
+
+# === RDS format ===
+seurat_obj <- readRDS("seurat_object.rds")
+
+# === Load metadata ===
+metadata <- read.csv("metadata.csv", row.names = 1)
+seurat_obj <- AddMetaData(seurat_obj, metadata = metadata)
+```
+
+---
+
+# Data Quality Checklist
+
+Before using downloaded data, verify:
+
+:::{.callout-important}
+## Quality Control Checklist
+
+✅ **Correct Dimensions**
+- Cells in rows, genes in columns (or vice versa, consistently)
+- Expected number of cells and genes
+
+✅ **Gene Identifiers**
+- Consistent ID format (Ensembl vs Gene Symbol)
+- No duplicated gene names
+- Recognized gene names
+
+✅ **Count Data**
+- Non-negative integers (raw counts)
+- Or properly normalized (if processed)
+- Reasonable expression range
+
+✅ **Metadata Present**
+- Cell barcodes/IDs
+- Sample information
+- Batch information
+- Any experimental conditions
+
+✅ **Sparsity**
+- Single-cell data should be 90-99% zeros
+- If not sparse, check if pre-processed
+
+✅ **File Integrity**
+- Complete download (check file size)
+- No corruption (test loading)
+- Matches publication if available
+:::
+
+---
+
+# Example: Complete Download Workflow
+
+## Case Study: Downloading and Preparing Brain Dataset
+
+```bash
+#!/bin/bash
+# complete_download_example.sh
+
+# ========================================
+# Example: Download Allen Brain Dataset
+# ========================================
+
+# 1. Create project directory
+mkdir -p ~/projects/brain_analysis
+cd ~/projects/brain_analysis
+
+# 2. Create subdirectories
+mkdir -p data/raw data/processed scripts figures
+
+# 3. Download data
+cd data/raw
+
+# Download from Allen Brain Atlas (example URL)
+wget https://allen-brain-cell-atlas.s3.amazonaws.com/example_brain_data.h5ad \
+  -O allen_brain_atlas.h5ad
+
+# 4. Verify download
+python3 << EOF
+import scanpy as sc
+import os
+
+# Check file exists and is readable
+if os.path.exists('allen_brain_atlas.h5ad'):
+    print("✓ File downloaded successfully")
+
+    # Load and inspect
+    adata = sc.read_h5ad('allen_brain_atlas.h5ad')
+    print(f"✓ Data loaded: {adata.n_obs} cells × {adata.n_vars} genes")
+    print(f"✓ Metadata columns: {list(adata.obs.columns)}")
+    print(f"✓ Sparsity: {(1 - adata.X.nnz / (adata.n_obs * adata.n_vars)) * 100:.1f}%")
+else:
+    print("✗ Download failed")
+EOF
+
+# 5. Create basic preprocessing script
+cat > ../scripts/preprocess.py << 'PYEOF'
+import scanpy as sc
+import numpy as np
+
+# Load data
+adata = sc.read_h5ad('data/raw/allen_brain_atlas.h5ad')
+print(f"Loaded: {adata.n_obs} cells × {adata.n_vars} genes")
+
+# Basic QC
+sc.pp.filter_cells(adata, min_genes=200)
+sc.pp.filter_genes(adata, min_cells=3)
+
+# Calculate QC metrics
+adata.var['mt'] = adata.var_names.str.startswith('MT-')
+sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], inplace=True)
+
+# Save processed
+adata.write('data/processed/brain_preprocessed.h5ad')
+print(f"✓ Saved: {adata.n_obs} cells × {adata.n_vars} genes")
+PYEOF
+
+# 6. Run preprocessing
+python3 ../scripts/preprocess.py
+
+echo "=== Download and preprocessing complete! ==="
+echo "Data location: data/processed/brain_preprocessed.h5ad"
+```
+
+---
+
+# Troubleshooting Common Issues
+
+## Issue 1: Large File Downloads Timing Out
+
+```bash
+# Solution: Use wget with resume capability
+wget -c --tries=0 --timeout=30 <URL>
+
+# Or use aria2c for multi-connection downloads
+aria2c -x 16 -s 16 <URL>
+
+# For AWS S3
+aws s3 cp s3://bucket/file . --no-sign-request --region us-west-2
+```
+
+## Issue 2: Out of Memory Loading Large Files
+
+```python
+import scanpy as sc
+
+# Solution 1: Read in backed mode
+adata = sc.read_h5ad('large_file.h5ad', backed='r')
+
+# Solution 2: Subsample first
+import h5py
+with h5py.File('large_file.h5ad', 'r') as f:
+    n_cells = f['obs']['_index'].shape[0]
+
+# Sample 10% of cells
+sample_idx = np.random.choice(n_cells, int(n_cells * 0.1), replace=False)
+adata_small = adata[sample_idx, :].copy()
+```
+
+## Issue 3: Gene ID Mismatches
+
+```python
+# Solution: Use biomaRt or mygene for conversion
+import mygene
+
+mg = mygene.MyGeneInfo()
+
+# Convert Ensembl to Symbol
+def ensembl_to_symbol(ensembl_ids, species='human'):
+    out = mg.querymany(
+        ensembl_ids,
+        scopes='ensembl.gene',
+        fields='symbol',
+        species=species,
+        returnall=True
+    )
+
+    mapping = {}
+    for item in out['out']:
+        if 'symbol' in item:
+            mapping[item['query']] = item['symbol']
+
+    return mapping
+
+# Apply to dataset
+if adata.var_names[0].startswith('ENS'):
+    mapping = ensembl_to_symbol(adata.var_names.tolist())
+    adata.var_names = [mapping.get(x, x) for x in adata.var_names]
+    adata.var_names_make_unique()
+```
+
+---
+
+# Additional Resources
+
+## Documentation and Tutorials
+
+| Resource | URL | Description |
+|----------|-----|-------------|
+| Scanpy Tutorials | [scanpy-tutorials.readthedocs.io](https://scanpy-tutorials.readthedocs.io/) | Official scanpy tutorials |
+| Seurat Vignettes | [satijalab.org/seurat](https://satijalab.org/seurat/) | Seurat workflows |
+| SRA Toolkit Docs | [github.com/ncbi/sra-tools](https://github.com/ncbi/sra-tools) | SRA download guide |
+| 10X Genomics | [support.10xgenomics.com](https://support.10xgenomics.com/) | Technical documentation |
+
+## Data Format Specifications
+
+- **H5AD**: [AnnData documentation](https://anndata.readthedocs.io/)
+- **Loom**: [loompy.org](http://loompy.org/)
+- **MEX**: [10X Genomics format](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices)
+
+## Citation Guidelines
+
+When using public data, always cite:
+
+1. **Original publication** that generated the data
+2. **Database/repository** where you accessed it
+3. **Accession numbers** (GEO, SRA, etc.)
+4. **Processing pipeline** if you used their processed data
+
+Example citation:
+```
+Data were obtained from the Gene Expression Omnibus (GEO) under
+accession number GSE123456 (Smith et al., 2023, Nature).
+Processed count matrices were used as provided by the authors.
+```
+
+---
+
+# Quick Reference: Data Sources Summary
+
+| Source | Best For | Format | Difficulty |
+|--------|----------|---------|-----------|
+| 10X Genomics | Tutorials, benchmarking | H5, MEX | ⭐ Easy |
+| Scanpy datasets | Quick start, testing | Built-in | ⭐ Easy |
+| Single Cell Portal | Curated, visualized | H5AD, CSV | ⭐⭐ Easy-Medium |
+| CellxGene | Standardized, integrated | H5AD | ⭐⭐ Easy-Medium |
+| GEO | Published studies | Variable | ⭐⭐⭐ Medium |
+| Allen Brain | Neuroscience-specific | H5AD | ⭐⭐ Medium |
+| HCA | Human reference | Multiple | ⭐⭐⭐ Medium-Hard |
+| SRA | Raw sequencing data | FASTQ | ⭐⭐⭐⭐ Hard |
+
+---
+
+:::{.callout-tip collapse="true"}
+## Need Help?
+
+If you encounter issues downloading or processing data:
+
+1. **Check the documentation** for the specific repository
+2. **Read the publication** associated with the dataset
+3. **Contact repository support** (most have help desks)
+4. **Ask on community forums**:
+   - [Biostars](https://www.biostars.org/)
+   - [Bioconductor Support](https://support.bioconductor.org/)
+   - [scverse Discourse](https://discourse.scverse.org/)
+5. **Consult course instructors** for assignment-specific data
+:::
+
+---
+
+*Last updated: 2025-11-02*
